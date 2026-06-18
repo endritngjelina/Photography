@@ -1,0 +1,1557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lens & Light - Premium Photography Studio</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                        'slideIn': 'slideIn 0.8s ease-out',
+                        'fadeInUp': 'fadeInUp 1s ease-out',
+                        'bounce-slow': 'bounce 3s infinite',
+                        'pulse-glow': 'pulseGlow 2s ease-in-out infinite',
+                        'rotate-slow': 'rotateSlow 20s linear infinite',
+                        'scale-pulse': 'scalePulse 2s ease-in-out infinite',
+                        'wave': 'wave 4s ease-in-out infinite',
+                        'shimmer': 'shimmer 2s ease-in-out infinite',
+                        'morphing': 'morphing 8s ease-in-out infinite',
+                        'typing': 'typing 4s steps(30) 1s forwards',
+                        'blink': 'blink 1s infinite',
+                        'glitch': 'glitch 0.3s ease-in-out infinite',
+                        'neon': 'neon 1.5s ease-in-out infinite alternate',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px) rotate(0deg)' },
+                            '50%': { transform: 'translateY(-30px) rotate(5deg)' }
+                        },
+                        glow: {
+                            '0%': { boxShadow: '0 0 20px rgba(147, 51, 234, 0.5)' },
+                            '100%': { boxShadow: '0 0 60px rgba(147, 51, 234, 1), 0 0 100px rgba(147, 51, 234, 0.5)' }
+                        },
+                        slideIn: {
+                            '0%': { opacity: '0', transform: 'translateY(50px) translateX(-50px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0) translateX(0)' }
+                        },
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(100px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        },
+                        pulseGlow: {
+                            '0%': { boxShadow: '0 0 0 0 rgba(147, 51, 234, 0.7)' },
+                            '70%': { boxShadow: '0 0 0 20px rgba(147, 51, 234, 0)' },
+                            '100%': { boxShadow: '0 0 0 0 rgba(147, 51, 234, 0)' }
+                        },
+                        rotateSlow: {
+                            '0%': { transform: 'rotate(0deg)' },
+                            '100%': { transform: 'rotate(360deg)' }
+                        },
+                        scalePulse: {
+                            '0%, 100%': { transform: 'scale(1)' },
+                            '50%': { transform: 'scale(1.05)' }
+                        },
+                        wave: {
+                            '0%, 100%': { transform: 'rotate(0deg)' },
+                            '25%': { transform: 'rotate(5deg)' },
+                            '75%': { transform: 'rotate(-5deg)' }
+                        },
+                        shimmer: {
+                            '0%': { backgroundPosition: '-200% 0' },
+                            '100%': { backgroundPosition: '200% 0' }
+                        },
+                        morphing: {
+                            '0%, 100%': { borderRadius: '20px' },
+                            '25%': { borderRadius: '50px 20px' },
+                            '50%': { borderRadius: '20px 50px' },
+                            '75%': { borderRadius: '50px' }
+                        },
+                        typing: {
+                            '0%': { width: '0' },
+                            '100%': { width: '100%' }
+                        },
+                        blink: {
+                            '0%, 50%': { borderColor: 'transparent' },
+                            '51%, 100%': { borderColor: 'currentColor' }
+                        },
+                        glitch: {
+                            '0%, 100%': { textShadow: '0 0 5px #ff0080, 0 0 10px #ff0080, 0 0 15px #ff0080' },
+                            '25%': { textShadow: '5px 0 0 #ff0080, -5px 0 0 #00ff80' },
+                            '75%': { textShadow: '-5px 0 0 #ff0080, 5px 0 0 #00ff80' }
+                        },
+                        neon: {
+                            '0%': { textShadow: '0 0 5px currentColor, 0 0 10px currentColor, 0 0 15px currentColor' },
+                            '100%': { textShadow: '0 0 10px currentColor, 0 0 20px currentColor, 0 0 30px currentColor, 0 0 40px currentColor' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@400;700;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            transition: all 0.3s ease;
+            background: linear-gradient(45deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+        }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .dark body {
+            background: linear-gradient(45deg, #1a1a2e 0%, #16213e 25%, #0f3460 50%, #533483 75%, #7209b7 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+        }
+        
+        .font-playfair { font-family: 'Playfair Display', serif; }
+        .font-orbitron { font-family: 'Orbitron', monospace; }
+        
+        .glass-effect {
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .dark .glass-effect {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmer 3s ease-in-out infinite;
+            background-size: 200% 200%;
+        }
+        
+        .dark .gradient-text {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 50%, #a8edea 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmer 3s ease-in-out infinite;
+            background-size: 200% 200%;
+        }
+        
+        .hero-bg {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.9) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="20" cy="20" r="0.5" fill="white" opacity="0.1"/><circle cx="80" cy="40" r="0.3" fill="white" opacity="0.1"/><circle cx="40" cy="80" r="0.4" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            animation: float 20s ease-in-out infinite;
+        }
+        
+        .dark .hero-bg {
+            background: linear-gradient(135deg, rgba(45, 27, 105, 0.9) 0%, rgba(17, 153, 142, 0.9) 100%);
+        }
+        
+        .photo-hover {
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .photo-hover::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: left 0.6s;
+            z-index: 2;
+        }
+        
+        .photo-hover:hover::before {
+            left: 100%;
+        }
+        
+        .photo-hover:hover {
+            transform: translateY(-20px) scale(1.08) rotateX(5deg);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4), 0 0 30px rgba(147, 51, 234, 0.3);
+        }
+        
+        .parallax {
+            transform-style: preserve-3d;
+        }
+        
+        #three-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.8;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 12px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 10px;
+            border: 2px solid transparent;
+            background-clip: padding-box;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #5a6fd8, #6a4190);
+            background-clip: padding-box;
+        }
+        
+        .typewriter {
+            overflow: hidden;
+            border-right: 3px solid;
+            white-space: nowrap;
+            animation: typing 4s steps(30) 1s forwards, blink 1s infinite;
+            width: 0;
+        }
+        
+        .nav-blur {
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+        }
+        
+        .floating-shapes {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+        }
+        
+        .floating-shapes::before,
+        .floating-shapes::after {
+            content: '';
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(45deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            border-radius: 50%;
+            animation: float 15s ease-in-out infinite;
+        }
+        
+        .floating-shapes::before {
+            top: 10%;
+            left: 10%;
+            animation-delay: -2s;
+        }
+        
+        .floating-shapes::after {
+            top: 70%;
+            right: 10%;
+            animation-delay: -8s;
+        }
+        
+        .interactive-cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transition: transform 0.1s ease;
+            mix-blend-mode: difference;
+        }
+        
+        .magnetic-btn {
+            transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            transition: opacity 0.5s ease;
+        }
+        
+        .loading-spinner {
+            width: 80px;
+            height: 80px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .tilt-card {
+            transform-style: preserve-3d;
+            transition: transform 0.1s ease-out;
+        }
+        
+        .music-visualizer {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+        }
+        
+        .visualizer-bars {
+            display: flex;
+            gap: 2px;
+            align-items: end;
+        }
+        
+        .visualizer-bar {
+            width: 3px;
+            background: linear-gradient(to top, #667eea, #764ba2);
+            border-radius: 2px;
+            animation: musicBeat 0.8s ease-in-out infinite alternate;
+        }
+        
+        .visualizer-bar:nth-child(1) { height: 10px; animation-delay: 0s; }
+        .visualizer-bar:nth-child(2) { height: 20px; animation-delay: 0.1s; }
+        .visualizer-bar:nth-child(3) { height: 15px; animation-delay: 0.2s; }
+        .visualizer-bar:nth-child(4) { height: 25px; animation-delay: 0.3s; }
+        .visualizer-bar:nth-child(5) { height: 12px; animation-delay: 0.4s; }
+        
+        @keyframes musicBeat {
+            0% { transform: scaleY(0.3); }
+            100% { transform: scaleY(1); }
+        }
+        
+        .notification {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            padding: 15px 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transform: translateX(400px);
+            transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 1000;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .dark .notification {
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+        }
+        
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+            z-index: 9999;
+            transition: width 0.1s ease;
+        }
+        
+        .section-reveal {
+            opacity: 0;
+            transform: translateY(100px);
+            transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        
+        .section-reveal.revealed {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .floating-text {
+            position: absolute;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            pointer-events: none;
+            animation: floatUp 3s ease-out forwards;
+        }
+        
+        @keyframes floatUp {
+            0% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-100px);
+            }
+        }
+        
+        .holographic {
+            position: relative;
+            background: linear-gradient(45deg, 
+                rgba(255, 0, 255, 0.1) 0%,
+                rgba(0, 255, 255, 0.1) 25%,
+                rgba(255, 255, 0, 0.1) 50%,
+                rgba(255, 0, 255, 0.1) 75%,
+                rgba(0, 255, 255, 0.1) 100%);
+            background-size: 400% 400%;
+            animation: holographicShift 4s ease infinite;
+        }
+        
+        @keyframes holographicShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        .particle-text {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .particle-text::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            color: transparent;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="10" cy="10" r="1" fill="white" opacity="0.8"/><circle cx="90" cy="30" r="0.8" fill="white" opacity="0.6"/><circle cx="50" cy="70" r="1.2" fill="white" opacity="0.9"/><circle cx="20" cy="90" r="0.9" fill="white" opacity="0.7"/></svg>');
+            background-size: 20px 20px;
+            -webkit-background-clip: text;
+            background-clip: text;
+            animation: particleMove 6s ease-in-out infinite;
+        }
+        
+        @keyframes particleMove {
+            0%, 100% { background-position: 0% 0%; }
+            50% { background-position: 100% 100%; }
+        }
+        
+        /* Enhanced Styles */
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+        
+        .portfolio-item {
+            position: relative;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+            height: 350px;
+            transition: all 0.4s ease;
+        }
+        
+        .portfolio-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s ease;
+        }
+        
+        .portfolio-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            padding: 30px 20px 20px;
+            transform: translateY(100%);
+            transition: transform 0.5s ease;
+        }
+        
+        .portfolio-item:hover .portfolio-overlay {
+            transform: translateY(0);
+        }
+        
+        .portfolio-item:hover .portfolio-img {
+            transform: scale(1.1);
+        }
+        
+        .contact-form input,
+        .contact-form textarea {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .contact-form input:focus,
+        .contact-form textarea:focus {
+            background: rgba(255,255,255,0.2);
+            outline: none;
+            box-shadow: 0 0 15px rgba(147, 51, 234, 0.5);
+        }
+        
+        .service-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            transition: all 0.4s ease;
+            height: 100%;
+        }
+        
+        .service-card:hover {
+            transform: translateY(-10px);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+        
+        .testimonial-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            transition: all 0.4s ease;
+        }
+        
+        .testimonial-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 80%;
+            height: 100%;
+            background: rgba(30, 30, 30, 0.95);
+            backdrop-filter: blur(20px);
+            z-index: 100;
+            transition: right 0.5s ease;
+            padding: 100px 30px 30px;
+        }
+        
+        .mobile-menu.active {
+            right: 0;
+        }
+        
+        .close-menu {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            font-size: 24px;
+            color: white;
+        }
+        
+        .mobile-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        
+        .mobile-nav a {
+            font-size: 24px;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .mobile-nav a:hover {
+            color: #a78bfa;
+            transform: translateX(10px);
+        }
+    </style>
+</head>
+<body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-all duration-500 custom-scrollbar">
+    <!-- Loading Screen -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="text-center">
+            <div class="loading-spinner mb-4"></div>
+            <div class="text-white font-orbitron text-xl animate-pulse">Loading Experience...</div>
+        </div>
+    </div>
+    
+    <!-- Progress Bar -->
+    <div id="progress-bar" class="progress-bar" style="width: 0%"></div>
+    
+    <!-- Interactive Cursor -->
+    <div id="cursor" class="interactive-cursor"></div>
+    
+    <!-- Music Visualizer -->
+    <div class="music-visualizer" id="music-visualizer">
+        <div class="visualizer-bars">
+            <div class="visualizer-bar"></div>
+            <div class="visualizer-bar"></div>
+            <div class="visualizer-bar"></div>
+            <div class="visualizer-bar"></div>
+            <div class="visualizer-bar"></div>
+        </div>
+    </div>
+    
+    <!-- Notification -->
+    <div id="notification" class="notification">
+        <i class="fas fa-star mr-2"></i>
+        Welcome to the ultimate photography experience!
+    </div>
+    
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="mobile-menu">
+        <button class="close-menu" id="close-menu">
+            <i class="fas fa-times"></i>
+        </button>
+        <div class="mobile-nav">
+            <a href="#home">Home</a>
+            <a href="#portfolio">Portfolio</a>
+            <a href="#services">Services</a>
+            <a href="#about">About</a>
+            <a href="#testimonials">Testimonials</a>
+            <a href="#contact">Contact</a>
+        </div>
+        <div class="mt-10 flex space-x-4">
+            <button id="mobile-theme-toggle" class="p-3 rounded-full glass-effect">
+                <i class="fas fa-moon dark:hidden text-lg"></i>
+                <i class="fas fa-sun hidden dark:inline text-lg"></i>
+            </button>
+            <button id="mobile-fullscreen-btn" class="p-3 rounded-full glass-effect">
+                <i class="fas fa-expand text-lg"></i>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 nav-blur glass-effect border-b border-white/20 dark:border-gray-700/50 transition-all duration-500">
+        <div class="max-w-7xl mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <div class="font-playfair text-3xl font-black gradient-text animate-neon particle-text" data-text="Lens & Light">
+                    Lens & Light
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#home" class="hover:text-purple-600 dark:hover:text-purple-400 transition-all duration-300 magnetic-btn transform hover:scale-110 relative group">
+                        Home
+                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-purple-600 to-pink-600 transition-all duration-300 group-hover:w-full"></span>
+                    </a>
+                    <a href="#portfolio" class="hover:text-purple-600 dark:hover:text-purple-400 transition-all duration-300 magnetic-btn transform hover:scale-110 relative group">
+                        Portfolio
+                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-purple-600 to-pink-600 transition-all duration-300 group-hover:w-full"></span>
+                    </a>
+                    <a href="#services" class="hover:text-purple-600 dark:hover:text-purple-400 transition-all duration-300 magnetic-btn transform hover:scale-110 relative group">
+                        Services
+                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-purple-600 to-pink-600 transition-all duration-300 group-hover:w-full"></span>
+                    </a>
+                    <a href="#about" class="hover:text-purple-600 dark:hover:text-purple-400 transition-all duration-300 magnetic-btn transform hover:scale-110 relative group">
+                        About
+                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-purple-600 to-pink-600 transition-all duration-300 group-hover:w-full"></span>
+                    </a>
+                    <a href="#testimonials" class="hover:text-purple-600 dark:hover:text-purple-400 transition-all duration-300 magnetic-btn transform hover:scale-110 relative group">
+                        Testimonials
+                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-purple-600 to-pink-600 transition-all duration-300 group-hover:w-full"></span>
+                    </a>
+                    <a href="#contact" class="hover:text-purple-600 dark:hover:text-purple-400 transition-all duration-300 magnetic-btn transform hover:scale-110 relative group">
+                        Contact
+                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-purple-600 to-pink-600 transition-all duration-300 group-hover:w-full"></span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button id="theme-toggle" class="p-3 rounded-full glass-effect hover:scale-125 transition-all duration-300 magnetic-btn animate-pulse-glow">
+                        <i class="fas fa-moon dark:hidden text-lg"></i>
+                        <i class="fas fa-sun hidden dark:inline text-lg"></i>
+                    </button>
+                    <button id="fullscreen-btn" class="p-3 rounded-full glass-effect hover:scale-125 transition-all duration-300 magnetic-btn">
+                        <i class="fas fa-expand text-lg"></i>
+                    </button>
+                    <button id="mobile-menu-btn" class="md:hidden p-3 rounded-full glass-effect hover:scale-125 transition-all duration-300">
+                        <i class="fas fa-bars text-lg"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="relative min-h-screen flex items-center justify-center hero-bg overflow-hidden">
+        <div class="floating-shapes"></div>
+        <div id="three-container"></div>
+        <div class="text-center z-10 px-6 section-reveal">
+            <div class="mb-8">
+                <h1 class="font-playfair text-6xl md:text-8xl font-black text-white mb-6 animate-float holographic">
+                    Capturing <br>
+                    <span class="typewriter font-orbitron bg-gradient-to-r from-pink-400 to-purple-600 bg-clip-text text-transparent">
+                        Infinite Moments
+                    </span>
+                </h1>
+            </div>
+            <p class="text-xl md:text-3xl text-white/90 mb-8 max-w-3xl mx-auto animate-fadeInUp font-light">
+                Where cutting-edge technology meets artistic vision to create <span class="font-bold gradient-text animate-neon">extraordinary</span> visual experiences
+            </p>
+            <div class="flex flex-col sm:flex-row gap-6 justify-center mb-12">
+                <a href="#portfolio" class="px-10 py-5 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full font-bold text-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-110 animate-glow magnetic-btn shadow-2xl">
+                    <i class="fas fa-images mr-2"></i>
+                    View Portfolio
+                </a>
+                <a href="#contact" class="px-10 py-5 border-3 border-white text-white rounded-full font-bold text-lg hover:bg-white hover:text-gray-900 transition-all duration-300 hover:scale-110 magnetic-btn glass-effect">
+                    <i class="fas fa-calendar mr-2"></i>
+                    Book Session
+                </a>
+            </div>
+            <div class="flex justify-center space-x-8 text-white/70">
+                <div class="text-center animate-float">
+                    <div class="text-3xl font-bold font-orbitron">500+</div>
+                    <div class="text-sm">Happy Clients</div>
+                </div>
+                <div class="text-center animate-float" style="animation-delay: 0.5s;">
+                    <div class="text-3xl font-bold font-orbitron">50+</div>
+                    <div class="text-sm">Awards Won</div>
+                </div>
+                <div class="text-center animate-float" style="animation-delay: 1s;">
+                    <div class="text-3xl font-bold font-orbitron">10K+</div>
+                    <div class="text-sm">Photos Captured</div>
+                </div>
+            </div>
+        </div>
+        <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce-slow">
+            <div class="w-6 h-10 border-2 border-white rounded-full flex justify-center">
+                <div class="w-1 h-3 bg-white rounded-full mt-2 animate-bounce"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Portfolio Section -->
+    <section id="portfolio" class="py-24 bg-gradient-to-br from-gray-50 to-purple-50 dark:from-gray-800 dark:to-purple-900 relative overflow-hidden">
+        <div class="floating-shapes"></div>
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-20 section-reveal">
+                <h2 class="font-playfair text-5xl md:text-7xl font-black gradient-text mb-6 animate-wave particle-text" data-text="Featured Masterpieces">
+                    Featured Masterpieces
+                </h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto font-light">
+                    Dive into a world of visual storytelling where each frame is meticulously crafted to evoke emotion and capture the essence of the moment
+                </p>
+                <div class="mt-8 flex justify-center flex-wrap gap-4">
+                    <button class="filter-btn px-6 py-3 bg-purple-600 text-white rounded-full font-semibold transition-all duration-300 hover:bg-purple-700 magnetic-btn active-filter" data-filter="all">
+                        All
+                    </button>
+                    <button class="filter-btn px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full font-semibold transition-all duration-300 hover:bg-purple-600 hover:text-white magnetic-btn" data-filter="portraits">
+                        Portraits
+                    </button>
+                    <button class="filter-btn px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full font-semibold transition-all duration-300 hover:bg-purple-600 hover:text-white magnetic-btn" data-filter="landscape">
+                        Landscape
+                    </button>
+                    <button class="filter-btn px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full font-semibold transition-all duration-300 hover:bg-purple-600 hover:text-white magnetic-btn" data-filter="events">
+                        Events
+                    </button>
+                    <button class="filter-btn px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full font-semibold transition-all duration-300 hover:bg-purple-600 hover:text-white magnetic-btn" data-filter="fashion">
+                        Fashion
+                    </button>
+                </div>
+            </div>
+            
+            <div class="portfolio-grid">
+                <div class="portfolio-item photo-hover" data-category="portraits">
+                    <img src="https://images.unsplash.com/photo-1519699047748-de8e457a634e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1180&q=80" alt="Portrait Photography" class="portfolio-img">
+                    <div class="portfolio-overlay">
+                        <h3 class="text-white text-xl font-bold mb-2">Urban Portrait</h3>
+                        <p class="text-purple-300">Portraits</p>
+                    </div>
+                </div>
+                
+                <div class="portfolio-item photo-hover" data-category="landscape">
+                    <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80" alt="Landscape Photography" class="portfolio-img">
+                    <div class="portfolio-overlay">
+                        <h3 class="text-white text-xl font-bold mb-2">Mountain Majesty</h3>
+                        <p class="text-purple-300">Landscape</p>
+                    </div>
+                </div>
+                
+                <div class="portfolio-item photo-hover" data-category="events">
+                    <img src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1169&q=80" alt="Event Photography" class="portfolio-img">
+                    <div class="portfolio-overlay">
+                        <h3 class="text-white text-xl font-bold mb-2">Wedding Bliss</h3>
+                        <p class="text-purple-300">Events</p>
+                    </div>
+                </div>
+                
+                <div class="portfolio-item photo-hover" data-category="fashion">
+                    <img src="https://images.unsplash.com/photo-1483982258113-b72862e6cff6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80" alt="Fashion Photography" class="portfolio-img">
+                    <div class="portfolio-overlay">
+                        <h3 class="text-white text-xl font-bold mb-2">Runway Elegance</h3>
+                        <p class="text-purple-300">Fashion</p>
+                    </div>
+                </div>
+                
+                <div class="portfolio-item photo-hover" data-category="portraits">
+                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80" alt="Portrait Photography" class="portfolio-img">
+                    <div class="portfolio-overlay">
+                        <h3 class="text-white text-xl font-bold mb-2">Studio Portrait</h3>
+                        <p class="text-purple-300">Portraits</p>
+                    </div>
+                </div>
+                
+                <div class="portfolio-item photo-hover" data-category="landscape">
+                    <img src="https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1274&q=80" alt="Landscape Photography" class="portfolio-img">
+                    <div class="portfolio-overlay">
+                        <h3 class="text-white text-xl font-bold mb-2">Forest Mist</h3>
+                        <p class="text-purple-300">Landscape</p>
+                    </div>
+                </div>
+                
+                <div class="portfolio-item photo-hover" data-category="events">
+                    <img src="https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80" alt="Event Photography" class="portfolio-img">
+                    <div class="portfolio-overlay">
+                        <h3 class="text-white text-xl font-bold mb-2">Concert Energy</h3>
+                        <p class="text-purple-300">Events</p>
+                    </div>
+                </div>
+                
+                <div class="portfolio-item photo-hover" data-category="fashion">
+                    <img src="https://images.unsplash.com/photo-1539109136881-3be0616acf4b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80" alt="Fashion Photography" class="portfolio-img">
+                    <div class="portfolio-overlay">
+                        <h3 class="text-white text-xl font-bold mb-2">Editorial Style</h3>
+                        <p class="text-purple-300">Fashion</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="py-24 bg-gradient-to-tr from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-900 relative overflow-hidden">
+        <div class="floating-shapes"></div>
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-20 section-reveal">
+                <h2 class="font-playfair text-5xl md:text-7xl font-black gradient-text mb-6 animate-wave particle-text" data-text="Our Services">
+                    Our Services
+                </h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto font-light">
+                    We offer a comprehensive range of photography services tailored to capture your most important moments
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="service-card tilt-card">
+                    <div class="text-purple-600 mb-4 text-5xl">
+                        <i class="fas fa-ring"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">Wedding Photography</h3>
+                    <p class="text-gray-600 dark:text-gray-300 mb-4">
+                        Capture the magic of your special day with our artistic wedding photography. We tell your love story through timeless images.
+                    </p>
+                    <div class="text-purple-600 font-bold">
+                        Starting at $1,800
+                    </div>
+                </div>
+                
+                <div class="service-card tilt-card">
+                    <div class="text-purple-600 mb-4 text-5xl">
+                        <i class="fas fa-portrait"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">Portrait Sessions</h3>
+                    <p class="text-gray-600 dark:text-gray-300 mb-4">
+                        Professional portraits for individuals, families, and professionals. Showcase your personality in stunning imagery.
+                    </p>
+                    <div class="text-purple-600 font-bold">
+                        Starting at $350
+                    </div>
+                </div>
+                
+                <div class="service-card tilt-card">
+                    <div class="text-purple-600 mb-4 text-5xl">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">Commercial Photography</h3>
+                    <p class="text-gray-600 dark:text-gray-300 mb-4">
+                        Elevate your brand with compelling commercial photography for products, architecture, and corporate needs.
+                    </p>
+                    <div class="text-purple-600 font-bold">
+                        Starting at $600
+                    </div>
+                </div>
+                
+                <div class="service-card tilt-card">
+                    <div class="text-purple-600 mb-4 text-5xl">
+                        <i class="fas fa-mountain"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">Landscape & Nature</h3>
+                    <p class="text-gray-600 dark:text-gray-300 mb-4">
+                        Experience the beauty of nature through our breathtaking landscape photography. Perfect for decor and personal enjoyment.
+                    </p>
+                    <div class="text-purple-600 font-bold">
+                        Starting at $450
+                    </div>
+                </div>
+                
+                <div class="service-card tilt-card">
+                    <div class="text-purple-600 mb-4 text-5xl">
+                        <i class="fas fa-tshirt"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">Fashion & Editorial</h3>
+                    <p class="text-gray-600 dark:text-gray-300 mb-4">
+                        Cutting-edge fashion photography that tells a story and showcases designs in their best light.
+                    </p>
+                    <div class="text-purple-600 font-bold">
+                        Starting at $750
+                    </div>
+                </div>
+                
+                <div class="service-card tilt-card">
+                    <div class="text-purple-600 mb-4 text-5xl">
+                        <i class="fas fa-video"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">Videography</h3>
+                    <p class="text-gray-600 dark:text-gray-300 mb-4">
+                        Cinematic storytelling for weddings, events, and commercial projects. Bring your memories to life in motion.
+                    </p>
+                    <div class="text-purple-600 font-bold">
+                        Starting at $1,200
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-24 bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-800 dark:to-blue-900/30 relative overflow-hidden">
+        <div class="floating-shapes"></div>
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-20 section-reveal">
+                <h2 class="font-playfair text-5xl md:text-7xl font-black gradient-text mb-6 animate-wave particle-text" data-text="About Us">
+                    About Us
+                </h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto font-light">
+                    Discover the passion and expertise behind Lens & Light Photography Studio
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div class="relative section-reveal">
+                    <div class="relative rounded-2xl overflow-hidden shadow-2xl">
+                        <img src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1158&q=80" alt="Our Studio" class="w-full h-auto rounded-2xl transform hover:scale-105 transition duration-700">
+                    </div>
+                    <div class="absolute -bottom-6 -right-6 w-2/3 h-40 bg-purple-600 rounded-2xl -z-10 animate-float"></div>
+                </div>
+                
+                <div class="section-reveal">
+                    <h3 class="text-3xl font-bold mb-6">Our Story</h3>
+                    <p class="text-gray-600 dark:text-gray-300 mb-6">
+                        Founded in 2010 by award-winning photographer Alex Morgan, Lens & Light has grown from a small passion project to a premier photography studio serving clients worldwide. What started as a love for capturing authentic moments has evolved into a team of talented artists dedicated to visual storytelling.
+                    </p>
+                    <p class="text-gray-600 dark:text-gray-300 mb-6">
+                        Our philosophy is simple: every moment has a story worth telling. We combine technical expertise with artistic vision to create images that resonate emotionally and stand the test of time.
+                    </p>
+                    <div class="grid grid-cols-2 gap-6 mt-8">
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg glass-effect">
+                            <div class="text-4xl font-bold text-purple-600 mb-2">13+</div>
+                            <div class="text-lg">Years Experience</div>
+                        </div>
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg glass-effect">
+                            <div class="text-4xl font-bold text-purple-600 mb-2">8</div>
+                            <div class="text-lg">Professional Photographers</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="py-24 bg-gradient-to-tr from-purple-50 to-pink-50 dark:from-gray-900 dark:to-purple-900/20 relative overflow-hidden">
+        <div class="floating-shapes"></div>
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-20 section-reveal">
+                <h2 class="font-playfair text-5xl md:text-7xl font-black gradient-text mb-6 animate-wave particle-text" data-text="Client Testimonials">
+                    Client Testimonials
+                </h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto font-light">
+                    Hear from our satisfied clients about their experience with Lens & Light
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="testimonial-card section-reveal">
+                    <div class="flex items-center mb-6">
+                        <div class="w-16 h-16 rounded-full overflow-hidden mr-4">
+                            <img src="https://randomuser.me/api/portraits/women/45.jpg" alt="Sarah Johnson" class="w-full h-full object-cover">
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-lg">Sarah Johnson</h4>
+                            <div class="text-purple-600 flex">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-300 italic">
+                        "Our wedding photos are absolutely stunning! Alex and team captured every special moment with such artistry. We'll cherish these forever."
+                    </p>
+                </div>
+                
+                <div class="testimonial-card section-reveal" style="animation-delay: 0.2s;">
+                    <div class="flex items-center mb-6">
+                        <div class="w-16 h-16 rounded-full overflow-hidden mr-4">
+                            <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Michael Chen" class="w-full h-full object-cover">
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-lg">Michael Chen</h4>
+                            <div class="text-purple-600 flex">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-300 italic">
+                        "The corporate headshots transformed our team's professional image. The photographers made everyone feel comfortable and the results speak for themselves."
+                    </p>
+                </div>
+                
+                <div class="testimonial-card section-reveal" style="animation-delay: 0.4s;">
+                    <div class="flex items-center mb-6">
+                        <div class="w-16 h-16 rounded-full overflow-hidden mr-4">
+                            <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="Jessica Williams" class="w-full h-full object-cover">
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-lg">Jessica Williams</h4>
+                            <div class="text-purple-600 flex">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-300 italic">
+                        "The family portrait session was such a wonderful experience. They captured our children's personalities perfectly. These photos are treasures!"
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-24 bg-gradient-to-b from-gray-900 to-black relative overflow-hidden">
+        <div class="floating-shapes"></div>
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-20 section-reveal">
+                <h2 class="font-playfair text-5xl md:text-7xl font-bold text-white mb-6 animate-wave">
+                    Let's Create Together
+                </h2>
+                <p class="text-xl text-gray-300 max-w-3xl mx-auto font-light">
+                    Ready to capture your story? Get in touch with us to schedule a consultation
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <div class="contact-form section-reveal">
+                    <form>
+                        <input type="text" placeholder="Your Name" class="glass-effect">
+                        <input type="email" placeholder="Your Email" class="glass-effect">
+                        <input type="text" placeholder="Subject" class="glass-effect">
+                        <textarea placeholder="Your Message" rows="5" class="glass-effect"></textarea>
+                        <button class="w-full px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full font-bold text-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 animate-glow magnetic-btn">
+                            Send Message
+                        </button>
+                    </form>
+                </div>
+                
+                <div class="section-reveal" style="animation-delay: 0.2s;">
+                    <div class="glass-effect p-8 rounded-2xl h-full">
+                        <h3 class="text-2xl font-bold text-white mb-6">Contact Information</h3>
+                        
+                        <div class="space-y-6">
+                            <div class="flex items-start">
+                                <div class="text-purple-400 text-xl mr-4">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-white mb-1">Studio Address</h4>
+                                    <p class="text-gray-300">123 Creative Lane, Art District, New York, NY 10001</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start">
+                                <div class="text-purple-400 text-xl mr-4">
+                                    <i class="fas fa-phone"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-white mb-1">Phone</h4>
+                                    <p class="text-gray-300">+1 (555) 123-4567</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start">
+                                <div class="text-purple-400 text-xl mr-4">
+                                    <i class="fas fa-envelope"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-white mb-1">Email</h4>
+                                    <p class="text-gray-300">hello@lensandlight.com</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start">
+                                <div class="text-purple-400 text-xl mr-4">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-white mb-1">Working Hours</h4>
+                                    <p class="text-gray-300">Monday - Friday: 9am - 6pm</p>
+                                    <p class="text-gray-300">Saturday: 10am - 4pm</p>
+                                    <p class="text-gray-300">Sunday: Closed</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-10">
+                            <h4 class="font-bold text-white mb-4">Follow Us</h4>
+                            <div class="flex space-x-4">
+                                <a href="#" class="w-12 h-12 rounded-full glass-effect flex items-center justify-center hover:bg-purple-600 transition-all duration-300">
+                                    <i class="fab fa-instagram text-white"></i>
+                                </a>
+                                <a href="#" class="w-12 h-12 rounded-full glass-effect flex items-center justify-center hover:bg-purple-600 transition-all duration-300">
+                                    <i class="fab fa-facebook-f text-white"></i>
+                                </a>
+                                <a href="#" class="w-12 h-12 rounded-full glass-effect flex items-center justify-center hover:bg-purple-600 transition-all duration-300">
+                                    <i class="fab fa-twitter text-white"></i>
+                                </a>
+                                <a href="#" class="w-12 h-12 rounded-full glass-effect flex items-center justify-center hover:bg-purple-600 transition-all duration-300">
+                                    <i class="fab fa-pinterest-p text-white"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-12 bg-black text-gray-400 relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-6 md:mb-0">
+                    <div class="font-playfair text-3xl font-black gradient-text mb-4">
+                        Lens & Light
+                    </div>
+                    <p class="max-w-md">Capturing the extraordinary in every moment since 2010</p>
+                </div>
+                
+                <div class="flex space-x-6">
+                    <a href="#" class="hover:text-purple-400 transition">Privacy Policy</a>
+                    <a href="#" class="hover:text-purple-400 transition">Terms of Service</a>
+                    <a href="#" class="hover:text-purple-400 transition">FAQ</a>
+                </div>
+            </div>
+            
+            <div class="mt-12 pt-8 border-t border-gray-800 text-center">
+                <p>&copy; 2023 Lens & Light Photography Studio. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Remove loading screen
+        setTimeout(() => {
+            document.getElementById('loading-overlay').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('loading-overlay').style.display = 'none';
+            }, 500);
+        }, 2000);
+
+        // Show notification after 3 seconds
+        setTimeout(() => {
+            const notification = document.getElementById('notification');
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 5000);
+        }, 3000);
+
+        // Initialize Three.js scene
+        initThreeScene();
+
+        // Setup scroll progress bar
+        setupProgressBar();
+
+        // Initialize custom cursor
+        initCursor();
+
+        // Setup theme toggle
+        setupThemeToggle();
+
+        // Setup fullscreen toggle
+        setupFullscreenToggle();
+
+        // Setup mobile menu
+        setupMobileMenu();
+
+        // Portfolio filtering
+        setupPortfolioFilter();
+
+        // Setup scroll reveal animations
+        setupScrollReveal();
+
+        // Setup magnetic buttons
+        setupMagneticButtons();
+
+        // Setup tilt effect
+        setupTiltEffect();
+
+        // Setup music visualizer animation
+        setupMusicVisualizer();
+    });
+
+    function initThreeScene() {
+        const container = document.getElementById('three-container');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ alpha: true });
+        
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        container.appendChild(renderer.domElement);
+        
+        // Create particle system
+        const particlesGeometry = new THREE.BufferGeometry();
+        const particlesCount = 1500;
+        
+        const posArray = new Float32Array(particlesCount * 3);
+        const colorArray = new Float32Array(particlesCount * 3);
+        
+        for(let i = 0; i < particlesCount * 3; i++) {
+            posArray[i] = (Math.random() - 0.5) * 10;
+            colorArray[i] = Math.random();
+        }
+        
+        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+        particlesGeometry.setAttribute('color', new THREE.BufferAttribute(colorArray, 3));
+        
+        const particlesMaterial = new THREE.PointsMaterial({
+            size: 0.02,
+            vertexColors: true,
+            transparent: true,
+            opacity: 0.8
+        });
+        
+        const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+        scene.add(particlesMesh);
+        
+        camera.position.z = 3;
+        
+        // Animation
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            particlesMesh.rotation.x += 0.001;
+            particlesMesh.rotation.y += 0.001;
+            
+            const positions = particlesGeometry.attributes.position.array;
+            for(let i = 0; i < particlesCount * 3; i += 3) {
+                positions[i + 1] += 0.001;
+                if(positions[i + 1] > 5) positions[i + 1] = -5;
+            }
+            particlesGeometry.attributes.position.needsUpdate = true;
+            
+            renderer.render(scene, camera);
+        }
+        
+        animate();
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    }
+
+    function setupProgressBar() {
+        const progressBar = document.getElementById('progress-bar');
+        
+        window.addEventListener('scroll', () => {
+            const windowHeight = window.innerHeight;
+            const documentHeight = document.documentElement.scrollHeight;
+            const scrollPosition = window.scrollY;
+            
+            const progress = (scrollPosition / (documentHeight - windowHeight)) * 100;
+            progressBar.style.width = `${progress}%`;
+        });
+    }
+
+    function initCursor() {
+        const cursor = document.getElementById('cursor');
+        
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = `${e.clientX}px`;
+            cursor.style.top = `${e.clientY}px`;
+        });
+        
+        // Add floating text on click
+        document.addEventListener('click', (e) => {
+            const floatingText = document.createElement('div');
+            floatingText.className = 'floating-text';
+            floatingText.textContent = '✨';
+            floatingText.style.left = `${e.clientX}px`;
+            floatingText.style.top = `${e.clientY}px`;
+            document.body.appendChild(floatingText);
+            
+            setTimeout(() => {
+                floatingText.remove();
+            }, 3000);
+        });
+    }
+
+    function setupThemeToggle() {
+        const themeToggle = document.getElementById('theme-toggle');
+        const mobileThemeToggle = document.getElementById('mobile-theme-toggle');
+        
+        const toggleTheme = () => {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        };
+        
+        themeToggle.addEventListener('click', toggleTheme);
+        mobileThemeToggle.addEventListener('click', toggleTheme);
+        
+        // Check for saved theme preference
+        if (localStorage.getItem('theme') === 'dark') {
+            document.documentElement.classList.add('dark');
+        }
+    }
+
+    function setupFullscreenToggle() {
+        const fullscreenBtn = document.getElementById('fullscreen-btn');
+        const mobileFullscreenBtn = document.getElementById('mobile-fullscreen-btn');
+        
+        const toggleFullscreen = () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.error(`Error attempting to enable fullscreen: ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        };
+        
+        fullscreenBtn.addEventListener('click', toggleFullscreen);
+        mobileFullscreenBtn.addEventListener('click', toggleFullscreen);
+    }
+
+    function setupMobileMenu() {
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const closeMenuBtn = document.getElementById('close-menu');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+        
+        closeMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        });
+        
+        // Close menu when clicking on links
+        const mobileLinks = document.querySelectorAll('.mobile-nav a');
+        mobileLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            });
+        });
+    }
+
+    function setupPortfolioFilter() {
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const portfolioItems = document.querySelectorAll('.portfolio-item');
+        
+        filterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // Remove active class from all buttons
+                filterButtons.forEach(btn => btn.classList.remove('active-filter'));
+                
+                // Add active class to clicked button
+                button.classList.add('active-filter');
+                
+                const filterValue = button.getAttribute('data-filter');
+                
+                portfolioItems.forEach(item => {
+                    if (filterValue === 'all' || item.getAttribute('data-category') === filterValue) {
+                        item.style.display = 'block';
+                        setTimeout(() => {
+                            item.style.opacity = '1';
+                            item.style.transform = 'translateY(0)';
+                        }, 50);
+                    } else {
+                        item.style.opacity = '0';
+                        item.style.transform = 'translateY(20px)';
+                        setTimeout(() => {
+                            item.style.display = 'none';
+                        }, 300);
+                    }
+                });
+            });
+        });
+    }
+
+    function setupScrollReveal() {
+        const revealSections = document.querySelectorAll('.section-reveal');
+        
+        const revealOnScroll = () => {
+            revealSections.forEach(section => {
+                const sectionTop = section.getBoundingClientRect().top;
+                const windowHeight = window.innerHeight;
+                
+                if (sectionTop < windowHeight * 0.85) {
+                    section.classList.add('revealed');
+                }
+            });
+        };
+        
+        // Initial check
+        revealOnScroll();
+        
+        // Check on scroll
+        window.addEventListener('scroll', revealOnScroll);
+    }
+
+    function setupMagneticButtons() {
+        const magneticBtns = document.querySelectorAll('.magnetic-btn');
+        
+        magneticBtns.forEach(btn => {
+            btn.addEventListener('mousemove', (e) => {
+                const rect = btn.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                
+                const deltaX = (x - centerX) / centerX * 10;
+                const deltaY = (y - centerY) / centerY * 10;
+                
+                btn.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+            });
+            
+            btn.addEventListener('mouseleave', () => {
+                btn.style.transform = 'translate(0, 0)';
+            });
+        });
+    }
+
+    function setupTiltEffect() {
+        const tiltCards = document.querySelectorAll('.tilt-card');
+        
+        tiltCards.forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                
+                const rotateY = (x - centerX) / centerX * 10;
+                const rotateX = (centerY - y) / centerY * 10;
+                
+                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.05, 1.05, 1.05)`;
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)';
+            });
+        });
+    }
+
+    function setupMusicVisualizer() {
+        const bars = document.querySelectorAll('.visualizer-bar');
+        let animationFrame;
+        
+        function animateBars() {
+            bars.forEach((bar, index) => {
+                const height = 5 + Math.random() * 25;
+                bar.style.height = `${height}px`;
+            });
+            
+            animationFrame = requestAnimationFrame(animateBars);
+        }
+        
+        animateBars();
+        
+        // Stop animation when tab is not visible
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') {
+                cancelAnimationFrame(animationFrame);
+            } else {
+                animateBars();
+            }
+        });
+    }
+</script>
+</body>
+</html>
