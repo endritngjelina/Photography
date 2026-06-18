@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lens & Light - Photography Studio</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                        'slideIn': 'slideIn 0.8s ease-out',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-20px)' }
+                        },
+                        glow: {
+                            '0%': { boxShadow: '0 0 20px rgba(147, 51, 234, 0.5)' },
+                            '100%': { boxShadow: '0 0 40px rgba(147, 51, 234, 0.8)' }
+                        },
+                        slideIn: {
+                            '0%': { opacity: '0', transform: 'translateY(30px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .font-playfair {
+            font-family: 'Playfair Display', serif;
+        }
+        
+        .glass-effect {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .dark .glass-effect {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .dark .gradient-text {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .hero-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .dark .hero-bg {
+            background: linear-gradient(135deg, #2d1b69 0%, #11998e 100%);
+        }
+        
+        .photo-hover {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .photo-hover:hover {
+            transform: translateY(-15px) scale(1.05);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+        }
+        
+        .parallax {
+            transform-style: preserve-3d;
+        }
+        
+        #three-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.6;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 4px;
+        }
+        
+        .typewriter {
+            overflow: hidden;
+            border-right: 2px solid;
+            white-space: nowrap;
+            animation: typing 3.5s steps(40, end), blink-caret 0.75s step-end infinite;
+        }
+        
+        @keyframes typing {
+            from { width: 0 }
+            to { width: 100% }
+        }
+        
+        @keyframes blink-caret {
+            from, to { border-color: transparent }
+            50% { border-color: currentColor }
+        }
+        
+        .nav-blur {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+    </style>
+</head>
+<body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-all duration-300 custom-scrollbar">
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 nav-blur bg-white/80 dark:bg-gray-900/80 border-b border-white/20 dark:border-gray-700/50">
+        <div class="max-w-7xl mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <div class="font-playfair text-2xl font-bold gradient-text">
+                    Lens & Light
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#home" class="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Home</a>
+                    <a href="#portfolio" class="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Portfolio</a>
+                    <a href="#about" class="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">About</a>
+                    <a href="#contact" class="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Contact</a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button id="theme-toggle" class="p-2 rounded-full glass-effect hover:scale-110 transition-transform">
+                        <i class="fas fa-moon dark:hidden"></i>
+                        <i class="fas fa-sun hidden dark:inline"></i>
+                    </button>
+                    <button class="md:hidden p-2 rounded-full glass-effect">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="relative min-h-screen flex items-center justify-center hero-bg overflow-hidden">
+        <div id="three-container"></div>
+        <div class="text-center z-10 px-6 animate-slideIn">
+            <h1 class="font-playfair text-5xl md:text-7xl font-bold text-white mb-6 animate-float">
+                Capturing <span class="typewriter">Moments</span>
+            </h1>
+            <p class="text-xl md:text-2xl text-white/90 mb-8 max-w-2xl mx-auto">
+                Where light meets creativity and every frame tells a story
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <button class="px-8 py-4 bg-white text-gray-900 rounded-full font-semibold hover:bg-gray-100 transition-all hover:scale-105 animate-glow">
+                    View Portfolio
+                </button>
+                <button class="px-8 py-4 border-2 border-white text-white rounded-full font-semibold hover:bg-white hover:text-gray-900 transition-all hover:scale-105">
+                    Book Session
+                </button>
+            </div>
+        </div>
+        <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
+            <i class="fas fa-chevron-down text-white text-2xl"></i>
+        </div>
+    </section>
+
+    <!-- Portfolio Section -->
+    <section id="portfolio" class="py-20 bg-gray-50 dark:bg-gray-800">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="font-playfair text-4xl md:text-5xl font-bold gradient-text mb-4">
+                    Featured Work
+                </h2>
+                <p class="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+                    A curated collection of moments frozen in time, each telling its unique story through light and shadow
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="photo-hover rounded-2xl overflow-hidden glass-effect">
+                    <div class="h-80 bg-gradient-to-br from-purple-400 to-pink-400 relative">
+                        <div class="absolute inset-0 bg-black/20 flex items-center justify-center">
+                            <i class="fas fa-camera text-white text-4xl"></i>
+                        </div>
+                        <div class="absolute bottom-4 left-4 text-white">
+                            <h3 class="font-semibold text-lg">Portrait Session</h3>
+                            <p class="text-sm opacity-80">Natural light photography</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="photo-hover rounded-2xl overflow-hidden glass-effect">
+                    <div class="h-80 bg-gradient-to-br from-blue-400 to-purple-500 relative">
+                        <div class="absolute inset-0 bg-black/20 flex items-center justify-center">
+                            <i class="fas fa-mountain text-white text-4xl"></i>
+                        </div>
+                        <div class="absolute bottom-4 left-4 text-white">
+                            <h3 class="font-semibold text-lg">Landscape</h3>
+                            <p class="text-sm opacity-80">Golden hour magic</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="photo-hover rounded-2xl overflow-hidden glass-effect">
+                    <div class="h-80 bg-gradient-to-br from-green-400 to-blue-500 relative">
+                        <div class="absolute inset-0 bg-black/20 flex items-center justify-center">
+                            <i class="fas fa-heart text-white text-4xl"></i>
+                        </div>
+                        <div class="absolute bottom-4 left-4 text-white">
+                            <h3 class="font-semibold text-lg">Wedding</h3>
+                            <p class="text-sm opacity-80">Love stories captured</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="photo-hover rounded-2xl overflow-hidden glass-effect">
+                    <div class="h-80 bg-gradient-to-br from-yellow-400 to-orange-500 relative">
+                        <div class="absolute inset-0 bg-black/20 flex items-center justify-center">
+                            <i class="fas fa-city text-white text-4xl"></i>
+                        </div>
+                        <div class="absolute bottom-4 left-4 text-white">
+                            <h3 class="font-semibold text-lg">Street Photography</h3>
+                            <p class="text-sm opacity-80">Urban life moments</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="photo-hover rounded-2xl overflow-hidden glass-effect">
+                    <div class="h-80 bg-gradient-to-br from-pink-400 to-red-500 relative">
+                        <div class="absolute inset-0 bg-black/20 flex items-center justify-center">
+                            <i class="fas fa-baby text-white text-4xl"></i>
+                        </div>
+                        <div class="absolute bottom-4 left-4 text-white">
+                            <h3 class="font-semibold text-lg">Newborn</h3>
+                            <p class="text-sm opacity-80">Precious first moments</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="photo-hover rounded-2xl overflow-hidden glass-effect">
+                    <div class="h-80 bg-gradient-to-br from-indigo-400 to-purple-600 relative">
+                        <div class="absolute inset-0 bg-black/20 flex items-center justify-center">
+                            <i class="fas fa-star text-white text-4xl"></i>
+                        </div>
+                        <div class="absolute bottom-4 left-4 text-white">
+                            <h3 class="font-semibold text-lg">Events</h3>
+                            <p class="text-sm opacity-80">Celebration memories</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-20 bg-white dark:bg-gray-900">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                <div class="animate-slideIn">
+                    <h2 class="font-playfair text-4xl md:text-5xl font-bold gradient-text mb-6">
+                        Behind the Lens
+                    </h2>
+                    <p class="text-lg text-gray-600 dark:text-gray-300 mb-6">
+                        With over a decade of experience capturing life's most precious moments, I believe that every photograph should tell a story. My passion lies in finding the extraordinary within the ordinary, creating timeless images that evoke emotion and preserve memories.
+                    </p>
+                    <p class="text-lg text-gray-600 dark:text-gray-300 mb-8">
+                        From intimate portraits to grand celebrations, I specialize in natural, authentic photography that captures the essence of each moment. My approach combines technical expertise with artistic vision to create images that you'll treasure forever.
+                    </p>
+                    <div class="flex flex-wrap gap-4">
+                        <span class="px-4 py-2 bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 rounded-full text-sm font-medium">Portrait Photography</span>
+                        <span class="px-4 py-2 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-sm font-medium">Wedding Photography</span>
+                        <span class="px-4 py-2 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full text-sm font-medium">Event Photography</span>
+                        <span class="px-4 py-2 bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 rounded-full text-sm font-medium">Commercial</span>
+                    </div>
+                </div>
+                <div class="relative">
+                    <div class="w-full h-96 bg-gradient-to-br from-purple-400 to-pink-500 rounded-2xl glass-effect animate-float">
+                        <div class="absolute inset-0 bg-black/20 rounded-2xl flex items-center justify-center">
+                            <i class="fas fa-user-circle text-white text-8xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-20 bg-gray-50 dark:bg-gray-800">
+        <div class="max-w-4xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="font-playfair text-4xl md:text-5xl font-bold gradient-text mb-4">
+                    Let's Create Together
+                </h2>
+                <p class="text-lg text-gray-600 dark:text-gray-300">
+                    Ready to capture your special moments? Get in touch and let's discuss your vision.
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <div class="space-y-8">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
+                            <i class="fas fa-phone text-purple-600 dark:text-purple-400"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold">Phone</h3>
+                            <p class="text-gray-600 dark:text-gray-300">+1 (555) 123-4567</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                            <i class="fas fa-envelope text-blue-600 dark:text-blue-400"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold">Email</h3>
+                            <p class="text-gray-600 dark:text-gray-300">hello@lensandlight.com</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+                            <i class="fas fa-map-marker-alt text-green-600 dark:text-green-400"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold">Location</h3>
+                            <p class="text-gray-600 dark:text-gray-300">New York, NY</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex space-x-4 pt-4">
+                        <a href="#" class="w-10 h-10 bg-purple-600 text-white rounded-full flex items-center justify-center hover:bg-purple-700 transition-colors">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors">
+                            <i class="fab fa-facebook"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-pink-600 text-white rounded-full flex items-center justify-center hover:bg-pink-700 transition-colors">
+                            <i class="fab fa-dribbble"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <form class="space-y-6 glass-effect p-8 rounded-2xl">
+                    <div>
+                        <input type="text" placeholder="Your Name" class="w-full px-4 py-3 bg-white/50 dark:bg-gray-700/50 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    </div>
+                    <div>
+                        <input type="email" placeholder="Your Email" class="w-full px-4 py-3 bg-white/50 dark:bg-gray-700/50 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    </div>
+                    <div>
+                        <select class="w-full px-4 py-3 bg-white/50 dark:bg-gray-700/50 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            <option>Session Type</option>
+                            <option>Portrait</option>
+                            <option>Wedding</option>
+                            <option>Event</option>
+                            <option>Commercial</option>
+                        </select>
+                    </div>
+                    <div>
+                        <textarea placeholder="Tell me about your vision..." rows="4" class="w-full px-4 py-3 bg-white/50 dark:bg-gray-700/50 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"></textarea>
+                    </div>
+                    <button type="submit" class="w-full px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all hover:scale-105 animate-glow">
+                        Send Message
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 dark:bg-black text-white py-12">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <div class="font-playfair text-2xl font-bold gradient-text mb-4">
+                Lens & Light
+            </div>
+            <p class="text-gray-400 mb-6">
+                Capturing life's beautiful moments, one frame at a time.
+            </p>
+            <p class="text-gray-500 text-sm">
+                © 2025 Lens & Light Photography. All rights reserved.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('theme-toggle');
+        const html = document.documentElement;
+        
+        themeToggle.addEventListener('click', () => {
+            html.classList.toggle('dark');
+            localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
+        });
+        
+        // Check for saved theme preference
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            html.classList.toggle('dark', savedTheme === 'dark');
+        } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            html.classList.add('dark');
+        }
+        
+        // Three.js Background Animation
+        let scene, camera, renderer, particles;
+        
+        function initThree() {
+            const container = document.getElementById('three-container');
+            
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            container.appendChild(renderer.domElement);
+            
+            // Create floating particles
+            const geometry = new THREE.BufferGeometry();
+            const vertices = [];
+            const colors = [];
+            
+            for (let i = 0; i < 1000; i++) {
+                vertices.push(
+                    (Math.random() - 0.5) * 2000,
+                    (Math.random() - 0.5) * 2000,
+                    (Math.random() - 0.5) * 2000
+                );
+                
+                colors.push(
+                    Math.random(),
+                    Math.random() * 0.5 + 0.5,
+                    1
+                );
+            }
+            
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+            geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+            
+            const material = new THREE.PointsMaterial({
+                size: 3,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.8
+            });
+            
+            particles = new THREE.Points(geometry, material);
+            scene.add(particles);
+            
+            camera.position.z = 1000;
+            
+            animate();
+        }
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            particles.rotation.x += 0.0005;
+            particles.rotation.y += 0.001;
+            
+            const positions = particles.geometry.attributes.position.array;
+            for (let i = 1; i < positions.length; i += 3) {
+                positions[i] += Math.sin(Date.now() * 0.001 + i) * 0.1;
+            }
+            particles.geometry.attributes.position.needsUpdate = true;
+            
+            renderer.render(scene, camera);
+        }
+        
+        // Smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+        
+        // Intersection Observer for animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+        
+        // Observe elements for animation
+        document.querySelectorAll('.photo-hover, .animate-slideIn').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(30px)';
+            el.style.transition = 'all 0.6s ease-out';
+            observer.observe(el);
+        });
+        
+        // Initialize Three.js when page loads
+        window.addEventListener('load', initThree);
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (camera && renderer) {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+        });
+        
+        // Add parallax effect to hero section
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const heroSection = document.getElementById('home');
+            const threeContainer = document.getElementById('three-container');
+            
+            if (heroSection && threeContainer) {
+                heroSection.style.transform = `translateY(${scrolled * 0.5}px)`;
+                threeContainer.style.transform = `translateY(${scrolled * 0.3}px)`;
+            }
+        });
+        
+        // Form submission
+        document.querySelector('form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('Thank you for your message! We\'ll get back to you soon.');
+        });
+    </script>
+</body>
+</html>
