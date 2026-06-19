@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enchanted Lens - Professional Photography</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #d4a574;
+            --secondary-color: #8b4b6b;
+            --accent-color: #e8b4cb;
+            --bg-color: #faf8f5;
+            --text-color: #2c2c2c;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #d4a574;
+            --secondary-color: #b8749f;
+            --accent-color: #e8b4cb;
+            --bg-color: #1a1a1a;
+            --text-color: #e8e8e8;
+            --card-bg: rgba(30, 30, 30, 0.95);
+            --shadow: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: all 0.5s ease;
+            overflow-x: hidden;
+        }
+
+        .floating-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            opacity: 0.6;
+            animation: float 8s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.6; }
+            50% { transform: translateY(-20px) rotate(180deg); opacity: 1; }
+        }
+
+        .butterfly {
+            position: absolute;
+            font-size: 20px;
+            color: var(--accent-color);
+            animation: butterfly-fly 15s infinite linear;
+        }
+
+        @keyframes butterfly-fly {
+            0% { transform: translateX(-100px) translateY(0px) rotate(0deg); }
+            25% { transform: translateX(25vw) translateY(-50px) rotate(90deg); }
+            50% { transform: translateX(50vw) translateY(0px) rotate(180deg); }
+            75% { transform: translateX(75vw) translateY(-30px) rotate(270deg); }
+            100% { transform: translateX(100vw) translateY(0px) rotate(360deg); }
+        }
+
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            padding: 1rem 0;
+            box-shadow: 0 2px 20px var(--shadow);
+            transition: all 0.3s ease;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo i {
+            color: var(--accent-color);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: var(--text-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent-color);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .theme-toggle:hover {
+            background: var(--primary-color);
+            color: var(--bg-color);
+            transform: rotate(180deg);
+        }
+
+        .hero {
+            height: 100vh;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background: linear-gradient(135deg, var(--bg-color) 0%, rgba(212, 165, 116, 0.1) 100%);
+            overflow: hidden;
+        }
+
+        .hero-content {
+            z-index: 10;
+            max-width: 800px;
+            padding: 2rem;
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            opacity: 0.8;
+            animation: fadeInUp 1s ease-out 0.3s both;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            animation: fadeInUp 1s ease-out 0.6s both;
+            box-shadow: 0 10px 30px rgba(212, 165, 116, 0.3);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(212, 165, 116, 0.5);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .three-js-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .section {
+            padding: 5rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .section h2 {
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 3rem;
+            color: var(--primary-color);
+            position: relative;
+        }
+
+        .section h2::after {
+            content: '🌸';
+            position: absolute;
+            top: -10px;
+            right: -30px;
+            font-size: 1.5rem;
+            animation: rotate 3s infinite linear;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .portfolio-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px var(--shadow);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .portfolio-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 50px var(--shadow);
+        }
+
+        .portfolio-card img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .portfolio-card:hover img {
+            transform: scale(1.1);
+        }
+
+        .card-content {
+            padding: 1.5rem;
+        }
+
+        .card-content h3 {
+            color: var(--secondary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .service-card {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px var(--shadow);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .service-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(212, 165, 116, 0.1), transparent);
+            transform: rotate(45deg);
+            transition: all 0.5s ease;
+            opacity: 0;
+        }
+
+        .service-card:hover::before {
+            opacity: 1;
+            transform: rotate(45deg) translate(50%, 50%);
+        }
+
+        .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px var(--shadow);
+        }
+
+        .service-card i {
+            font-size: 3rem;
+            color: var(--accent-color);
+            margin-bottom: 1rem;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        .contact-form {
+            background: var(--card-bg);
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px var(--shadow);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--secondary-color);
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid var(--accent-color);
+            border-radius: 10px;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            transform: scale(1.02);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(212, 165, 116, 0.3);
+        }
+
+        footer {
+            background: var(--card-bg);
+            padding: 3rem 2rem;
+            text-align: center;
+            margin-top: 5rem;
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .social-links a {
+            color: var(--accent-color);
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .social-links a:hover {
+            color: var(--primary-color);
+            transform: translateY(-3px) rotate(15deg);
+        }
+
+        .mobile-menu {
+            display: none;
+            flex-direction: column;
+            gap: 1rem;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            padding: 1rem;
+            box-shadow: 0 10px 30px var(--shadow);
+        }
+
+        .mobile-menu.active {
+            display: flex;
+        }
+
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            gap: 3px;
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background: var(--text-color);
+            transition: all 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .hamburger {
+                display: flex;
+            }
+            
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .hero p {
+                font-size: 1.1rem;
+            }
+        }
+
+        .scroll-indicator {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--accent-color);
+            font-size: 2rem;
+            animation: bounce 2s infinite;
+            z-index: 100;
+        }
+
+        .testimonials {
+            background: linear-gradient(135deg, rgba(212, 165, 116, 0.1), rgba(139, 75, 107, 0.1));
+            padding: 5rem 2rem;
+            margin: 3rem 0;
+        }
+
+        .testimonial-card {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px var(--shadow);
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .testimonial-card img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin-bottom: 1rem;
+            border: 3px solid var(--accent-color);
+        }
+
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-particles"></div>
+    
+    <header>
+        <nav>
+            <a href="#" class="logo">
+                <i class="fas fa-camera"></i>
+                Enchanted Lens
+            </a>
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#portfolio">Portfolio</a></li>
+                <li><a href="#services">Services</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <button class="theme-toggle">
+                <i class="fas fa-moon"></i>
+            </button>
+            <div class="mobile-menu">
+                <a href="#home">Home</a>
+                <a href="#portfolio">Portfolio</a>
+                <a href="#services">Services</a>
+                <a href="#about">About</a>
+                <a href="#contact">Contact</a>
+            </div>
+        </nav>
+    </header>
+
+    <section id="home" class="hero">
+        <canvas class="three-js-canvas"></canvas>
+        <div class="hero-content">
+            <h1>Capturing Life's Enchanted Moments</h1>
+            <p>Where every photograph tells a story as beautiful as a blooming rose</p>
+            <a href="#portfolio" class="cta-button">Explore My Work</a>
+        </div>
+        <div class="scroll-indicator">
+            <i class="fas fa-chevron-down"></i>
+        </div>
+    </section>
+
+    <section id="portfolio" class="section">
+        <h2 class="fade-in">Portfolio Gallery</h2>
+        <div class="portfolio-grid">
+            <div class="portfolio-card fade-in">
+                <img src="https://images.unsplash.com/photo-1520637836862-4d197d17c29a?w=400&h=250&fit=crop" alt="Wedding Photography">
+                <div class="card-content">
+                    <h3>Romantic Weddings</h3>
+                    <p>Capturing the magic of your special day with ethereal beauty and timeless elegance.</p>
+                </div>
+            </div>
+            <div class="portfolio-card fade-in">
+                <img src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=400&h=250&fit=crop" alt="Nature Photography">
+                <div class="card-content">
+                    <h3>Nature's Symphony</h3>
+                    <p>Discovering the delicate dance between light and shadow in nature's grand theater.</p>
+                </div>
+            </div>
+            <div class="portfolio-card fade-in">
+                <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=250&fit=crop" alt="Portrait Photography">
+                <div class="card-content">
+                    <h3>Enchanted Portraits</h3>
+                    <p>Revealing the unique story and inner beauty that makes each person extraordinary.</p>
+                </div>
+            </div>
+            <div class="portfolio-card fade-in">
+                <img src="https://images.unsplash.com/photo-1606800052052-a08af7148866?w=400&h=250&fit=crop" alt="Family Photography">
+                <div class="card-content">
+                    <h3>Family Harmony</h3>
+                    <p>Creating treasured memories that capture the love and joy shared between families.</p>
+                </div>
+            </div>
+            <div class="portfolio-card fade-in">
+                <img src="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=400&h=250&fit=crop" alt="Event Photography">
+                <div class="card-content">
+                    <h3>Celebration Moments</h3>
+                    <p>Preserving the spontaneous joy and precious moments of life's celebrations.</p>
+                </div>
+            </div>
+            <div class="portfolio-card fade-in">
+                <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=250&fit=crop" alt="Landscape Photography">
+                <div class="card-content">
+                    <h3>Dreamy Landscapes</h3>
+                    <p>Capturing the breathtaking beauty of landscapes with a touch of enchantment.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="services" class="section">
+        <h2 class="fade-in">Services</h2>
+        <div class="services-grid">
+            <div class="service-card fade-in">
+                <i class="fas fa-heart"></i>
+                <h3>Wedding Photography</h3>
+                <p>Documenting your love story with romantic, artistic imagery that captures every precious moment of your special day.</p>
+            </div>
+            <div class="service-card fade-in">
+                <i class="fas fa-user-friends"></i>
+                <h3>Portrait Sessions</h3>
+                <p>Creating stunning portraits that reveal personality and beauty through carefully crafted lighting and composition.</p>
+            </div>
+            <div class="service-card fade-in">
+                <i class="fas fa-home"></i>
+                <h3>Family Photography</h3>
+                <p>Capturing the warmth and connection of family bonds in beautiful, natural settings.</p>
+            </div>
+            <div class="service-card fade-in">
+                <i class="fas fa-calendar-alt"></i>
+                <h3>Event Coverage</h3>
+                <p>Preserving the energy and emotion of your special events with candid, heartfelt photography.</p>
+            </div>
+            <div class="service-card fade-in">
+                <i class="fas fa-leaf"></i>
+                <h3>Nature Photography</h3>
+                <p>Exploring the natural world to create artistic images that celebrate the beauty of our environment.</p>
+            </div>
+            <div class="service-card fade-in">
+                <i class="fas fa-magic"></i>
+                <h3>Creative Sessions</h3>
+                <p>Bringing your creative vision to life with artistic, conceptual photography that tells your unique story.</p>
+            </div>
+        </div>
+    </section>
+
+    <div class="testimonials">
+        <div class="section">
+            <h2 class="fade-in">What Clients Say</h2>
+            <div class="testimonial-card fade-in">
+                <img src="https://images.unsplash.com/photo-1494790108755-2616b612b776?w=80&h=80&fit=crop&crop=face" alt="Client">
+                <h3>Sarah Johnson</h3>
+                <p>"The most magical photography experience! Every shot was like a fairy tale come to life. The attention to detail and artistic vision exceeded all our expectations."</p>
+                <div style="color: var(--accent-color); margin-top: 1rem;">
+                    ⭐⭐⭐⭐⭐
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section id="about" class="section">
+        <h2 class="fade-in">About the Artist</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center;">
+            <div class="fade-in">
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face" alt="Photographer" style="width: 100%; border-radius: 20px; box-shadow: 0 10px 30px var(--shadow);">
+            </div>
+            <div class="fade-in">
+                <h3 style="color: var(--secondary-color); margin-bottom: 1rem;">Hello, I'm Emma Rose</h3>
+                <p style="margin-bottom: 1rem;">With over a decade of experience in capturing life's most beautiful moments, I believe that every photograph should tell a story that touches the heart. My style blends romance with artistry, creating images that feel both timeless and magical.</p>
+                <p style="margin-bottom: 1rem;">Inspired by the delicate beauty of nature - from the gentle flutter of butterfly wings to the soft petals of a blooming rose - I strive to bring that same sense of wonder and enchantment to every session.</p>
+                <p>When I'm not behind the camera, you'll find me in my garden, tending to roses and drawing inspiration from the natural world around me.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="section">
+        <h2 class="fade-in">Let's Create Magic Together</h2>
+        <form class="contact-form fade-in">
+            <div class="form-group">
+                <label for="name">Your Name</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="event-type">Event Type</label>
+                <input type="text" id="event-type" name="event-type" placeholder="Wedding, Portrait, Family, etc.">
+            </div>
+            <div class="form-group">
+                <label for="date">Preferred Date</label>
+                <input type="date" id="date" name="date">
+            </div>
+            <div class="form-group">
+                <label for="message">Tell Me About Your Vision</label>
+                <textarea id="message" name="message" rows="5" placeholder="Share your dreams and ideas..."></textarea>
+            </div>
+            <button type="submit" class="submit-btn">Send Message</button>
+        </form>
+    </section>
+
+    <footer>
+        <div class="social-links">
+            <a href="#"><i class="fab fa-instagram"></i></a>
+            <a href="#"><i class="fab fa-facebook"></i></a>
+            <a href="#"><i class="fab fa-pinterest"></i></a>
+            <a href="#"><i class="fab fa-twitter"></i></a>
+        </div>
+        <p>&copy; 2025 Enchanted Lens Photography. All rights reserved.</p>
+        <p style="margin-top: 0.5rem; opacity: 0.7;">Capturing beauty, one frame at a time 🌸</p>
+    </footer>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.querySelector('.theme-toggle');
+        const themeIcon = themeToggle.querySelector('i');
+        let isDark = false;
+
+        themeToggle.addEventListener('click', () => {
+            isDark = !isDark;
+            document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+            themeIcon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+        });
+
+        // Mobile Menu Toggle
+        const hamburger = document.querySelector('.hamburger');
+        const mobileMenu = document.querySelector('.mobile-menu');
+
+        hamburger.addEventListener('click', () => {
+            mobileMenu.classList.toggle('active');
+        });
+
+        // Smooth Scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Floating Particles
+        function createParticles() {
+            const container = document.querySelector('.floating-particles');
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 8 + 's';
+                particle.style.animationDuration = (Math.random() * 5 + 5) + 's';
+                container.appendChild(particle);
+            }
+        }
+
+        // Butterflies
+        function createButterflies() {
+            const container = document.querySelector('.floating-particles');
+            for (let i = 0; i < 3; i++) {
+                const butterfly = document.createElement('div');
+                butterfly.className = 'butterfly';
+                butterfly.innerHTML = '🦋';
+                butterfly.style.top = Math.random() * 80 + 10 + '%';
+                butterfly.style.animationDelay = Math.random() * 15 + 's';
+                butterfly.style.animationDuration = (Math.random() * 10 + 15) + 's';
+                container.appendChild(butterfly);
+            }
+        }
+
+        // Three.js Scene
+        function initThreeJS() {
+            const canvas = document.querySelector('.three-js-canvas');
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true });
+            
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0x000000, 0);
+
+            // Create floating geometric shapes
+            const geometry = new THREE.IcosahedronGeometry(0.5, 0);
+            const material = new THREE.MeshBasicMaterial({ 
+                color: 0xd4a574, 
+                wireframe: true,
+                transparent: true,
+                opacity: 0.3
+            });
+
+            const shapes = [];
+            for (let i = 0; i < 15; i++) {
+                const shape = new THREE.Mesh(geometry, material);
+                shape.position.x = (Math.random() - 0.5) * 20;
+                shape.position.y = (Math.random() - 0.5) * 15;
+                shape.position.z = (Math.random() - 0.5) * 10;
+                shape.rotation.x = Math.random() * Math.PI;
+                shape.rotation.y = Math.random() * Math.PI;
+                shapes.push(shape);
+                scene.add(shape);
+            }
+
+            camera.position.z = 5;
+
+            // Animation loop
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                shapes.forEach((shape, index) => {
+                    shape.rotation.x += 0.005 + index * 0.001;
+                    shape.rotation.y += 0.003 + index * 0.0005;
+                    shape.position.y += Math.sin(Date.now() * 0.001 + index) * 0.001;
+                });
+
+                renderer.render(scene, camera);
+            }
+
+            animate();
+
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+
+        // Intersection Observer for fade-in animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        // Observe all fade-in elements
+        document.querySelectorAll('.fade-in').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Header scroll effect
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            const scrollIndicator = document.querySelector('.scroll-indicator');
+            
+            if (window.scrollY > 100) {
+                header.style.background = 'rgba(250, 248, 245, 0.95)';
+                if (document.documentElement.getAttribute('data-theme') === 'dark') {
+                    header.style.background = 'rgba(26, 26, 26, 0.95)';
+                }
+                scrollIndicator.style.opacity = '0';
+            } else {
+                header.style.background = 'var(--card-bg)';
+                scrollIndicator.style.opacity = '1';
+            }
+        });
+
+        // Portfolio card hover effects with GSAP
+        document.querySelectorAll('.portfolio-card').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                gsap.to(card, {
+                    duration: 0.3,
+                    y: -10,
+                    scale: 1.02,
+                    boxShadow: '0 20px 50px rgba(0,0,0,0.2)',
+                    ease: 'power2.out'
+                });
+            });
+
+            card.addEventListener('mouseleave', () => {
+                gsap.to(card, {
+                    duration: 0.3,
+                    y: 0,
+                    scale: 1,
+                    boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
+                    ease: 'power2.out'
+                });
+            });
+        });
+
+        // Service card animations
+        document.querySelectorAll('.service-card').forEach((card, index) => {
+            card.addEventListener('mouseenter', () => {
+                gsap.to(card.querySelector('i'), {
+                    duration: 0.5,
+                    rotation: 360,
+                    scale: 1.2,
+                    ease: 'back.out(1.7)'
+                });
+            });
+
+            card.addEventListener('mouseleave', () => {
+                gsap.to(card.querySelector('i'), {
+                    duration: 0.3,
+                    rotation: 0,
+                    scale: 1,
+                    ease: 'power2.out'
+                });
+            });
+        });
+
+        // Form submission
+        document.querySelector('.contact-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Simple form validation and animation
+            const submitBtn = this.querySelector('.submit-btn');
+            const originalText = submitBtn.textContent;
+            
+            submitBtn.textContent = 'Sending... ✨';
+            submitBtn.disabled = true;
+            
+            // Simulate sending
+            setTimeout(() => {
+                submitBtn.textContent = 'Message Sent! 🌸';
+                submitBtn.style.background = 'linear-gradient(45deg, #4ade80, #22c55e)';
+                
+                setTimeout(() => {
+                    submitBtn.textContent = originalText;
+                    submitBtn.disabled = false;
+                    submitBtn.style.background = 'linear-gradient(45deg, var(--primary-color), var(--secondary-color))';
+                    this.reset();
+                }, 2000);
+            }, 1500);
+        });
+
+        // Dynamic background color change based on scroll
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const rate = scrolled * -0.5;
+            const sections = document.querySelectorAll('.section');
+            
+            sections.forEach((section, index) => {
+                const rect = section.getBoundingClientRect();
+                if (rect.top <= window.innerHeight && rect.bottom >= 0) {
+                    const opacity = Math.max(0, Math.min(1, 1 - Math.abs(rect.top) / window.innerHeight));
+                    if (index % 2 === 0) {
+                        document.body.style.background = `linear-gradient(135deg, var(--bg-color) 0%, rgba(212, 165, 116, ${opacity * 0.1}) 100%)`;
+                    } else {
+                        document.body.style.background = `linear-gradient(135deg, var(--bg-color) 0%, rgba(139, 75, 107, ${opacity * 0.1}) 100%)`;
+                    }
+                }
+            });
+        });
+
+        // Parallax effect for hero section
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const hero = document.querySelector('.hero');
+            const heroContent = document.querySelector('.hero-content');
+            
+            if (hero && heroContent) {
+                const rate = scrolled * -0.5;
+                heroContent.style.transform = `translateY(${rate}px)`;
+            }
+        });
+
+        // Add sparkle effects on click
+        document.addEventListener('click', function(e) {
+            createSparkle(e.clientX, e.clientY);
+        });
+
+        function createSparkle(x, y) {
+            const sparkle = document.createElement('div');
+            sparkle.style.position = 'fixed';
+            sparkle.style.left = x + 'px';
+            sparkle.style.top = y + 'px';
+            sparkle.style.width = '10px';
+            sparkle.style.height = '10px';
+            sparkle.style.background = 'var(--accent-color)';
+            sparkle.style.borderRadius = '50%';
+            sparkle.style.pointerEvents = 'none';
+            sparkle.style.zIndex = '9999';
+            sparkle.style.animation = 'sparkle 1s ease-out forwards';
+            
+            document.body.appendChild(sparkle);
+            
+            setTimeout(() => {
+                sparkle.remove();
+            }, 1000);
+        }
+
+        // Add sparkle animation to CSS
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes sparkle {
+                0% {
+                    transform: scale(0) rotate(0deg);
+                    opacity: 1;
+                }
+                50% {
+                    transform: scale(1) rotate(180deg);
+                    opacity: 1;
+                }
+                100% {
+                    transform: scale(0) rotate(360deg);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Initialize everything when page loads
+        window.addEventListener('load', () => {
+            createParticles();
+            createButterflies();
+            initThreeJS();
+            
+            // Animate hero content on load
+            gsap.from('.hero h1', {
+                duration: 1.5,
+                y: 50,
+                opacity: 0,
+                ease: 'power3.out'
+            });
+            
+            gsap.from('.hero p', {
+                duration: 1.5,
+                y: 30,
+                opacity: 0,
+                delay: 0.3,
+                ease: 'power3.out'
+            });
+            
+            gsap.from('.cta-button', {
+                duration: 1.5,
+                y: 30,
+                opacity: 0,
+                delay: 0.6,
+                ease: 'power3.out'
+            });
+        });
+
+        // Cursor trail effect
+        let mouseTrail = [];
+        const maxTrailLength = 10;
+
+        document.addEventListener('mousemove', function(e) {
+            mouseTrail.push({ x: e.clientX, y: e.clientY });
+            
+            if (mouseTrail.length > maxTrailLength) {
+                mouseTrail.shift();
+            }
+            
+            updateTrail();
+        });
+
+        function updateTrail() {
+            const existingTrail = document.querySelectorAll('.mouse-trail');
+            existingTrail.forEach(el => el.remove());
+            
+            mouseTrail.forEach((point, index) => {
+                const trail = document.createElement('div');
+                trail.className = 'mouse-trail';
+                trail.style.position = 'fixed';
+                trail.style.left = point.x + 'px';
+                trail.style.top = point.y + 'px';
+                trail.style.width = (maxTrailLength - index) + 'px';
+                trail.style.height = (maxTrailLength - index) + 'px';
+                trail.style.borderRadius = '50%';
+                trail.style.background = `rgba(212, 165, 116, ${(index + 1) / maxTrailLength * 0.5})`;
+                trail.style.pointerEvents = 'none';
+                trail.style.zIndex = '9998';
+                trail.style.transform = 'translate(-50%, -50%)';
+                
+                document.body.appendChild(trail);
+                
+                setTimeout(() => {
+                    trail.remove();
+                }, 100);
+            });
+        }
+
+        // Add some easter eggs
+        let clickCount = 0;
+        document.querySelector('.logo').addEventListener('click', function(e) {
+            e.preventDefault();
+            clickCount++;
+            
+            if (clickCount === 5) {
+                // Easter egg: make butterflies multiply
+                for (let i = 0; i < 10; i++) {
+                    setTimeout(() => {
+                        const butterfly = document.createElement('div');
+                        butterfly.className = 'butterfly';
+                        butterfly.innerHTML = ['🦋', '🌸', '🌺', '🌻'][Math.floor(Math.random() * 4)];
+                        butterfly.style.top = Math.random() * 80 + 10 + '%';
+                        butterfly.style.fontSize = Math.random() * 20 + 15 + 'px';
+                        butterfly.style.animationDuration = (Math.random() * 5 + 10) + 's';
+                        document.querySelector('.floating-particles').appendChild(butterfly);
+                        
+                        setTimeout(() => butterfly.remove(), 15000);
+                    }, i * 200);
+                }
+                clickCount = 0;
+            }
+        });
+    </script>
+</body>
+</html>
