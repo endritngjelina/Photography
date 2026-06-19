@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bloom Photography Studio</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+        
+        :root {
+            --primary-light: #f8fafc;
+            --secondary-light: #e2e8f0;
+            --accent-light: #ec4899;
+            --text-light: #1e293b;
+            --primary-dark: #0f172a;
+            --secondary-dark: #1e293b;
+            --accent-dark: #f472b6;
+            --text-dark: #f1f5f9;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            transition: all 0.5s ease;
+        }
+
+        .light-theme {
+            background: var(--primary-light);
+            color: var(--text-light);
+        }
+
+        .dark-theme {
+            background: var(--primary-dark);
+            color: var(--text-dark);
+        }
+
+        .hero-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.5rem, 8vw, 6rem);
+            font-weight: 300;
+            line-height: 1.1;
+            background: linear-gradient(135deg, #ec4899, #f472b6, #fb7185);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: titleFloat 6s ease-in-out infinite;
+        }
+
+        @keyframes titleFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .floating-element {
+            position: absolute;
+            animation: float 8s ease-in-out infinite;
+            opacity: 0.7;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-20px) rotate(5deg); }
+            66% { transform: translateY(-10px) rotate(-3deg); }
+        }
+
+        .butterfly {
+            font-size: 2rem;
+            color: #ec4899;
+            animation: butterfly 12s linear infinite;
+        }
+
+        @keyframes butterfly {
+            0% { transform: translateX(-100px) translateY(0px) rotate(0deg); }
+            25% { transform: translateX(25vw) translateY(-50px) rotate(90deg); }
+            50% { transform: translateX(50vw) translateY(20px) rotate(180deg); }
+            75% { transform: translateX(75vw) translateY(-30px) rotate(270deg); }
+            100% { transform: translateX(100vw) translateY(10px) rotate(360deg); }
+        }
+
+        .card-hover {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .card-hover:hover {
+            transform: translateY(-15px) scale(1.02);
+            box-shadow: 0 25px 50px rgba(236, 72, 153, 0.3);
+        }
+
+        .glass-effect {
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .dark-theme .glass-effect {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #ec4899, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-link {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #ec4899, #f472b6);
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            padding: 2rem 0;
+        }
+
+        .portfolio-item {
+            aspect-ratio: 4/3;
+            background: linear-gradient(45deg, #ec4899, #f472b6, #fb7185);
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .portfolio-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .portfolio-item:hover::before {
+            opacity: 1;
+        }
+
+        .portfolio-content {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 2rem;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+            color: white;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .portfolio-item:hover .portfolio-content {
+            transform: translateY(0);
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            z-index: 1000;
+            width: 60px;
+            height: 30px;
+            background: linear-gradient(135deg, #ec4899, #f472b6);
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            padding: 3px;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle-ball {
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .dark-theme .theme-toggle-ball {
+            transform: translateX(30px);
+        }
+
+        .parallax-section {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .parallax-bg {
+            position: absolute;
+            top: -20%;
+            left: -20%;
+            width: 140%;
+            height: 140%;
+            background: radial-gradient(circle, rgba(236, 72, 153, 0.1) 0%, transparent 70%);
+            animation: parallaxRotate 20s linear infinite;
+        }
+
+        @keyframes parallaxRotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .service-icon {
+            font-size: 3rem;
+            background: linear-gradient(135deg, #ec4899, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: iconPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes iconPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .contact-form {
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+        }
+
+        .dark-theme .contact-form {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .form-input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(236, 72, 153, 0.3);
+            border-radius: 10px;
+            padding: 1rem;
+            color: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #ec4899;
+            box-shadow: 0 0 20px rgba(236, 72, 153, 0.3);
+        }
+
+        .three-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .section-divider {
+            height: 100px;
+            background: linear-gradient(45deg, transparent, rgba(236, 72, 153, 0.1), transparent);
+            margin: 4rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .section-divider::before {
+            content: '🌸';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2rem;
+            animation: bloom 4s ease-in-out infinite;
+        }
+
+        @keyframes bloom {
+            0%, 100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+            50% { transform: translate(-50%, -50%) scale(1.2) rotate(180deg); }
+        }
+
+        .scroll-indicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #ec4899, #f472b6, #fb7185);
+            transform-origin: left;
+            z-index: 1000;
+        }
+
+        @media (max-width: 768px) {
+            .hero-title { font-size: 3rem; }
+            .portfolio-grid { grid-template-columns: 1fr; }
+            .theme-toggle { top: 1rem; right: 1rem; }
+        }
+    </style>
+</head>
+<body class="light-theme">
+    <!-- Scroll Progress Indicator -->
+    <div class="scroll-indicator" id="scrollIndicator"></div>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" id="themeToggle">
+        <div class="theme-toggle-ball">
+            <i class="fas fa-sun" id="themeIcon"></i>
+        </div>
+    </button>
+
+    <!-- Three.js Canvas -->
+    <canvas class="three-canvas" id="threeCanvas"></canvas>
+
+    <!-- Floating Elements -->
+    <div class="floating-element butterfly" style="top: 20%; animation-delay: 0s;">🦋</div>
+    <div class="floating-element butterfly" style="top: 60%; animation-delay: 4s;">🦋</div>
+    <div class="floating-element" style="top: 30%; right: 10%; animation-delay: 2s; font-size: 1.5rem;">🌸</div>
+    <div class="floating-element" style="top: 70%; left: 5%; animation-delay: 6s; font-size: 1.2rem;">🌹</div>
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 glass-effect transition-all duration-500" id="navbar">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <div class="text-2xl font-bold gradient-text">Bloom Photography</div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#home" class="nav-link">Home</a>
+                    <a href="#about" class="nav-link">About</a>
+                    <a href="#portfolio" class="nav-link">Portfolio</a>
+                    <a href="#services" class="nav-link">Services</a>
+                    <a href="#contact" class="nav-link">Contact</a>
+                </div>
+                <div class="md:hidden">
+                    <button id="mobileMenu" class="text-2xl">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="min-h-screen flex items-center justify-center parallax-section">
+        <div class="parallax-bg"></div>
+        <div class="container mx-auto px-6 text-center relative z-10">
+            <h1 class="hero-title mb-6">Capturing Life's Beautiful Moments</h1>
+            <p class="text-xl md:text-2xl mb-8 opacity-80 max-w-3xl mx-auto">
+                Where every photograph tells a story, and every moment becomes a timeless memory through the lens of artistic vision.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <button class="px-8 py-4 bg-gradient-to-r from-pink-500 to-pink-600 text-white rounded-full hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+                    <i class="fas fa-camera mr-2"></i>View Portfolio
+                </button>
+                <button class="px-8 py-4 glass-effect rounded-full hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+                    <i class="fas fa-phone mr-2"></i>Book Session
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section Divider -->
+    <div class="section-divider"></div>
+
+    <!-- About Section -->
+    <section id="about" class="py-20 parallax-section">
+        <div class="parallax-bg"></div>
+        <div class="container mx-auto px-6 relative z-10">
+            <div class="text-center mb-16">
+                <h2 class="text-5xl font-bold gradient-text mb-6" style="font-family: 'Playfair Display', serif;">About Bloom Photography</h2>
+                <p class="text-xl opacity-80 max-w-3xl mx-auto">
+                    Passionate about capturing the essence of life's most precious moments with artistic flair and professional excellence.
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div class="glass-effect rounded-3xl p-8 card-hover">
+                    <h3 class="text-3xl font-bold mb-4 gradient-text">Our Story</h3>
+                    <p class="text-lg leading-relaxed mb-6 opacity-90">
+                        Founded with a passion for visual storytelling, Bloom Photography has been capturing life's most beautiful moments for over a decade. We believe that every photograph should be a work of art that evokes emotion and preserves memories for generations to come.
+                    </p>
+                    <p class="text-lg leading-relaxed opacity-90">
+                        Our approach combines technical expertise with creative vision, ensuring that each image we create is not just a photograph, but a treasured keepsake that tells your unique story.
+                    </p>
+                </div>
+                
+                <div class="space-y-6">
+                    <div class="glass-effect rounded-2xl p-6 card-hover">
+                        <div class="flex items-center mb-4">
+                            <div class="service-icon mr-4">
+                                <i class="fas fa-award"></i>
+                            </div>
+                            <h4 class="text-xl font-semibold">Award-Winning Excellence</h4>
+                        </div>
+                        <p class="opacity-80">Recognized internationally for artistic vision and technical mastery.</p>
+                    </div>
+                    
+                    <div class="glass-effect rounded-2xl p-6 card-hover">
+                        <div class="flex items-center mb-4">
+                            <div class="service-icon mr-4">
+                                <i class="fas fa-heart"></i>
+                            </div>
+                            <h4 class="text-xl font-semibold">Passion-Driven Artistry</h4>
+                        </div>
+                        <p class="opacity-80">Every shoot is approached with genuine enthusiasm and creative dedication.</p>
+                    </div>
+                    
+                    <div class="glass-effect rounded-2xl p-6 card-hover">
+                        <div class="flex items-center mb-4">
+                            <div class="service-icon mr-4">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <h4 class="text-xl font-semibold">Client-Centered Approach</h4>
+                        </div>
+                        <p class="opacity-80">Your vision and satisfaction are at the heart of everything we do.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section Divider -->
+    <div class="section-divider"></div>
+
+    <!-- Portfolio Section -->
+    <section id="portfolio" class="py-20 parallax-section">
+        <div class="parallax-bg"></div>
+        <div class="container mx-auto px-6 relative z-10">
+            <div class="text-center mb-16">
+                <h2 class="text-5xl font-bold gradient-text mb-6" style="font-family: 'Playfair Display', serif;">Our Portfolio</h2>
+                <p class="text-xl opacity-80 max-w-3xl mx-auto">
+                    A curated collection of our finest work, showcasing the beauty and emotion captured through our lens.
+                </p>
+            </div>
+            
+            <div class="portfolio-grid">
+                <div class="portfolio-item card-hover">
+                    <div class="portfolio-content">
+                        <h3 class="text-2xl font-bold mb-2">Wedding Bliss</h3>
+                        <p class="opacity-90">Capturing the magic of your special day with romantic elegance.</p>
+                    </div>
+                </div>
+                
+                <div class="portfolio-item card-hover">
+                    <div class="portfolio-content">
+                        <h3 class="text-2xl font-bold mb-2">Portrait Artistry</h3>
+                        <p class="opacity-90">Professional portraits that reveal personality and character.</p>
+                    </div>
+                </div>
+                
+                <div class="portfolio-item card-hover">
+                    <div class="portfolio-content">
+                        <h3 class="text-2xl font-bold mb-2">Nature's Beauty</h3>
+                        <p class="opacity-90">Breathtaking landscapes and natural wonder photography.</p>
+                    </div>
+                </div>
+                
+                <div class="portfolio-item card-hover">
+                    <div class="portfolio-content">
+                        <h3 class="text-2xl font-bold mb-2">Family Moments</h3>
+                        <p class="opacity-90">Heartwarming family photographs filled with love and joy.</p>
+                    </div>
+                </div>
+                
+                <div class="portfolio-item card-hover">
+                    <div class="portfolio-content">
+                        <h3 class="text-2xl font-bold mb-2">Fashion Forward</h3>
+                        <p class="opacity-90">High-end fashion photography with creative flair.</p>
+                    </div>
+                </div>
+                
+                <div class="portfolio-item card-hover">
+                    <div class="portfolio-content">
+                        <h3 class="text-2xl font-bold mb-2">Event Coverage</h3>
+                        <p class="opacity-90">Complete event documentation with artistic storytelling.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section Divider -->
+    <div class="section-divider"></div>
+
+    <!-- Services Section -->
+    <section id="services" class="py-20 parallax-section">
+        <div class="parallax-bg"></div>
+        <div class="container mx-auto px-6 relative z-10">
+            <div class="text-center mb-16">
+                <h2 class="text-5xl font-bold gradient-text mb-6" style="font-family: 'Playfair Display', serif;">Our Services</h2>
+                <p class="text-xl opacity-80 max-w-3xl mx-auto">
+                    Professional photography services tailored to capture your most important moments with artistic excellence.
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="glass-effect rounded-3xl p-8 text-center card-hover">
+                    <div class="service-icon mb-6">
+                        <i class="fas fa-ring"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4 gradient-text">Wedding Photography</h3>
+                    <p class="opacity-80 mb-6">
+                        Complete wedding day coverage from preparation to celebration, capturing every precious moment with romantic artistry.
+                    </p>
+                    <ul class="text-left space-y-2 opacity-70">
+                        <li>• Engagement sessions</li>
+                        <li>• Full day coverage</li>
+                        <li>• Professional editing</li>
+                        <li>• Online gallery delivery</li>
+                    </ul>
+                </div>
+                
+                <div class="glass-effect rounded-3xl p-8 text-center card-hover">
+                    <div class="service-icon mb-6">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4 gradient-text">Portrait Sessions</h3>
+                    <p class="opacity-80 mb-6">
+                        Professional portraits that capture personality and character, perfect for personal or business use.
+                    </p>
+                    <ul class="text-left space-y-2 opacity-70">
+                        <li>• Individual portraits</li>
+                        <li>• Family photography</li>
+                        <li>• Professional headshots</li>
+                        <li>• Creative sessions</li>
+                    </ul>
+                </div>
+                
+                <div class="glass-effect rounded-3xl p-8 text-center card-hover">
+                    <div class="service-icon mb-6">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4 gradient-text">Event Photography</h3>
+                    <p class="opacity-80 mb-6">
+                        Comprehensive event coverage that documents every important moment with professional quality and artistic vision.
+                    </p>
+                    <ul class="text-left space-y-2 opacity-70">
+                        <li>• Corporate events</li>
+                        <li>• Birthday celebrations</li>
+                        <li>• Anniversary parties</li>
+                        <li>• Special occasions</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section Divider -->
+    <div class="section-divider"></div>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-20 parallax-section">
+        <div class="parallax-bg"></div>
+        <div class="container mx-auto px-6 relative z-10">
+            <div class="text-center mb-16">
+                <h2 class="text-5xl font-bold gradient-text mb-6" style="font-family: 'Playfair Display', serif;">Get In Touch</h2>
+                <p class="text-xl opacity-80 max-w-3xl mx-auto">
+                    Ready to create beautiful memories together? We'd love to hear about your vision and bring it to life.
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-12">
+                <div class="space-y-8">
+                    <div class="glass-effect rounded-2xl p-6 card-hover">
+                        <div class="flex items-center mb-4">
+                            <div class="service-icon mr-4">
+                                <i class="fas fa-phone"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-xl font-semibold">Phone</h4>
+                                <p class="opacity-80">+1 (555) 123-4567</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-effect rounded-2xl p-6 card-hover">
+                        <div class="flex items-center mb-4">
+                            <div class="service-icon mr-4">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-xl font-semibold">Email</h4>
+                                <p class="opacity-80">hello@bloomphotography.com</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-effect rounded-2xl p-6 card-hover">
+                        <div class="flex items-center mb-4">
+                            <div class="service-icon mr-4">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-xl font-semibold">Studio Location</h4>
+                                <p class="opacity-80">123 Creative Avenue<br>Art District, CA 90210</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="contact-form">
+                    <form class="space-y-6">
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <input type="text" placeholder="Your Name" class="form-input w-full">
+                            <input type="email" placeholder="Your Email" class="form-input w-full">
+                        </div>
+                        <input type="text" placeholder="Subject" class="form-input w-full">
+                        <textarea placeholder="Tell us about your vision..." rows="6" class="form-input w-full resize-none"></textarea>
+                        <button type="submit" class="w-full px-8 py-4 bg-gradient-to-r from-pink-500 to-pink-600 text-white rounded-full hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+                            <i class="fas fa-paper-plane mr-2"></i>Send Message
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-12 glass-effect">
+        <div class="container mx-auto px-6 text-center">
+            <div class="mb-8">
+                <h3 class="text-3xl font-bold gradient-text mb-4">Bloom Photography Studio</h3>
+                <p class="opacity-80 max-w-2xl mx-auto">
+                    Creating timeless memories through the art of photography. Every moment captured with passion, every image crafted with care.
+                </p>
+            </div>
+            
+            <div class="flex justify-center space-x-6 mb-8">
+                <a href="#" class="text-2xl hover:text-pink-500 transition-colors duration-300">
+                    <i class="fab fa-instagram"></i>
+                </a>
+                <a href="#" class="text-2xl hover:text-pink-500 transition-colors duration-300">
+                    <i class="fab fa-facebook"></i>
+                </a>
+                <a href="#" class="text-2xl hover:text-pink-500 transition-colors duration-300">
+                    <i class="fab fa-twitter"></i>
+                </a>
+                <a href="#" class="text-2xl hover:text-pink-500 transition-colors duration-300">
+                    <i class="fab fa-pinterest"></i>
+                </a>
+            </div>
+            
+            <div class="border-t border-pink-500 border-opacity-30 pt-8">
+                <p class="opacity-60">
+                    © 2025 Bloom Photography Studio. All rights reserved. Made with 🌸 and passion.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Theme Toggle Functionality
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const body = document.body;
+
+        themeToggle.addEventListener('click', () => {
+            body.classList.toggle('dark-theme');
+            body.classList.toggle('light-theme');
+            
+            if (body.classList.contains('dark-theme')) {
+                themeIcon.className = 'fas fa-moon';
+            } else {
+                themeIcon.className = 'fas fa-sun';
+            }
+        });
+
+        // Scroll Progress Indicator
+        window.addEventListener('scroll', () => {
+            const scrollProgress = document.getElementById('scrollIndicator');
+            const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+            const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrollPercent = (scrollTop / scrollHeight) * 100;
+            scrollProgress.style.transform = `scaleX(${scrollPercent / 100})`;
+        });
+
+        // Smooth Scrolling for Navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Navbar Background on Scroll
+        window.addEventListener('scroll', () => {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.style.background = body.classList.contains('dark-theme') 
+                    ? 'rgba(15, 23, 42, 0.9)' 
+                    : 'rgba(248, 250, 252, 0.9)';
+            } else {
+                navbar.style.background = body.classList.contains('dark-theme')
+                    ? 'rgba(0, 0, 0, 0.3)'
+                    : 'rgba(255, 255, 255, 0.1)';
+            }
+        });
+
+        // Three.js Scene Setup
+        let scene, camera, renderer, particles, butterfly3D, roses = [];
+        
+        function initThreeJS() {
+            const canvas = document.getElementById('threeCanvas');
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0x000000, 0);
+
+            // Create floating particles
+            createParticles();
+            
+            // Create 3D butterfly
+            create3DButterfly();
+            
+            // Create 3D roses
+            create3DRoses();
+            
+            camera.position.z = 5;
+            animate();
+        }
+
+        function createParticles() {
+            const geometry = new THREE.BufferGeometry();
+            const vertices = [];
+            const colors = [];
+            
+            for (let i = 0; i < 1000; i++) {
+                vertices.push(
+                    Math.random() * 20 - 10,
+                    Math.random() * 20 - 10,
+                    Math.random() * 20 - 10
+                );
+                
+                const color = new THREE.Color();
+                color.setHSL(0.9 + Math.random() * 0.1, 0.8, 0.6);
+                colors.push(color.r, color.g, color.b);
+            }
+            
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+            geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+            
+            const material = new THREE.PointsMaterial({
+                size: 0.05,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.8,
+                blending: THREE.AdditiveBlending
+            });
+            
+            particles = new THREE.Points(geometry, material);
+            scene.add(particles);
+        }
+
+        function create3DButterfly() {
+            const butterflyGeometry = new THREE.Group();
+            
+            // Create butterfly wings using planes
+            const wingGeometry = new THREE.PlaneGeometry(0.3, 0.4);
+            const wingMaterial = new THREE.MeshBasicMaterial({
+                color: 0xec4899,
+                transparent: true,
+                opacity: 0.7,
+                side: THREE.DoubleSide
+            });
+            
+            const leftWing = new THREE.Mesh(wingGeometry, wingMaterial);
+            leftWing.position.set(-0.2, 0, 0);
+            leftWing.rotation.z = Math.PI / 6;
+            
+            const rightWing = new THREE.Mesh(wingGeometry, wingMaterial);
+            rightWing.position.set(0.2, 0, 0);
+            rightWing.rotation.z = -Math.PI / 6;
+            
+            // Butterfly body
+            const bodyGeometry = new THREE.CylinderGeometry(0.02, 0.02, 0.6, 8);
+            const bodyMaterial = new THREE.MeshBasicMaterial({ color: 0x4a1d96 });
+            const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+            
+            butterflyGeometry.add(leftWing);
+            butterflyGeometry.add(rightWing);
+            butterflyGeometry.add(body);
+            
+            butterfly3D = butterflyGeometry;
+            butterfly3D.position.set(2, 1, 0);
+            scene.add(butterfly3D);
+        }
+
+        function create3DRoses() {
+            for (let i = 0; i < 5; i++) {
+                const roseGroup = new THREE.Group();
+                
+                // Create rose petals using spheres
+                const petalGeometry = new THREE.SphereGeometry(0.1, 8, 6);
+                const petalMaterial = new THREE.MeshBasicMaterial({
+                    color: new THREE.Color().setHSL(0.9 + Math.random() * 0.1, 0.8, 0.6),
+                    transparent: true,
+                    opacity: 0.8
+                });
+                
+                // Create multiple petals
+                for (let j = 0; j < 8; j++) {
+                    const petal = new THREE.Mesh(petalGeometry, petalMaterial);
+                    const angle = (j / 8) * Math.PI * 2;
+                    petal.position.set(
+                        Math.cos(angle) * 0.15,
+                        Math.sin(angle) * 0.15,
+                        0
+                    );
+                    petal.scale.set(1, 0.5, 0.3);
+                    roseGroup.add(petal);
+                }
+                
+                // Rose center
+                const centerGeometry = new THREE.SphereGeometry(0.05, 8, 8);
+                const centerMaterial = new THREE.MeshBasicMaterial({ color: 0xffd700 });
+                const center = new THREE.Mesh(centerGeometry, centerMaterial);
+                roseGroup.add(center);
+                
+                roseGroup.position.set(
+                    (Math.random() - 0.5) * 10,
+                    (Math.random() - 0.5) * 10,
+                    (Math.random() - 0.5) * 5
+                );
+                
+                roses.push(roseGroup);
+                scene.add(roseGroup);
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Rotate particles
+            if (particles) {
+                particles.rotation.x += 0.001;
+                particles.rotation.y += 0.002;
+            }
+            
+            // Animate butterfly
+            if (butterfly3D) {
+                butterfly3D.position.x = Math.sin(Date.now() * 0.001) * 3;
+                butterfly3D.position.y = Math.cos(Date.now() * 0.0015) * 2;
+                butterfly3D.rotation.z = Math.sin(Date.now() * 0.003) * 0.3;
+            }
+            
+            // Animate roses
+            roses.forEach((rose, index) => {
+                rose.rotation.y += 0.01;
+                rose.position.y += Math.sin(Date.now() * 0.001 + index) * 0.01;
+            });
+            
+            renderer.render(scene, camera);
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (camera && renderer) {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+        });
+
+        // Mobile Menu Toggle
+        const mobileMenuBtn = document.getElementById('mobileMenu');
+        const navLinks = document.querySelector('.hidden.md\\:flex');
+        
+        mobileMenuBtn.addEventListener('click', () => {
+            navLinks.classList.toggle('hidden');
+            navLinks.classList.toggle('flex');
+            navLinks.classList.toggle('flex-col');
+            navLinks.classList.toggle('absolute');
+            navLinks.classList.toggle('top-full');
+            navLinks.classList.toggle('left-0');
+            navLinks.classList.toggle('w-full');
+            navLinks.classList.toggle('bg-white');
+            navLinks.classList.toggle('dark:bg-gray-800');
+            navLinks.classList.toggle('p-4');
+            navLinks.classList.toggle('space-y-4');
+        });
+
+        // Intersection Observer for Animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Observe elements for animation
+        document.querySelectorAll('.card-hover, .portfolio-item, .glass-effect').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(30px)';
+            el.style.transition = 'all 0.6s ease-out';
+            observer.unobserve(el);
+            observer.observe(el);
+        });
+
+        // Form Submission Handler
+        document.querySelector('form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            // Create success message
+            const successMessage = document.createElement('div');
+            successMessage.className = 'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-pink-500 to-pink-600 text-white p-6 rounded-2xl shadow-2xl z-50 text-center';
+            successMessage.innerHTML = `
+                <div class="text-2xl mb-2">🌸</div>
+                <h3 class="text-xl font-bold mb-2">Message Sent Successfully!</h3>
+                <p>We'll get back to you within 24 hours.</p>
+            `;
+            
+            document.body.appendChild(successMessage);
+            
+            // Remove message after 3 seconds
+            setTimeout(() => {
+                successMessage.remove();
+            }, 3000);
+            
+            // Reset form
+            e.target.reset();
+        });
+
+        // Add floating petals animation
+        function createFloatingPetals() {
+            const petals = ['🌸', '🌺', '🌻', '🌹', '🌷'];
+            
+            setInterval(() => {
+                const petal = document.createElement('div');
+                petal.innerHTML = petals[Math.floor(Math.random() * petals.length)];
+                petal.style.position = 'fixed';
+                petal.style.top = '-50px';
+                petal.style.left = Math.random() * window.innerWidth + 'px';
+                petal.style.fontSize = Math.random() * 20 + 15 + 'px';
+                petal.style.zIndex = '1';
+                petal.style.pointerEvents = 'none';
+                petal.style.animation = `petalsfall ${Math.random() * 5 + 5}s linear forwards`;
+                petal.style.opacity = '0.7';
+                
+                document.body.appendChild(petal);
+                
+                setTimeout(() => {
+                    petal.remove();
+                }, 10000);
+            }, 2000);
+        }
+
+        // Add CSS for falling petals
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes petalsfall {
+                0% {
+                    transform: translateY(-50px) rotate(0deg);
+                    opacity: 1;
+                }
+                100% {
+                    transform: translateY(${window.innerHeight + 100}px) rotate(360deg);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Initialize everything when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            initThreeJS();
+            createFloatingPetals();
+            
+            // Add typing effect to hero title
+            const heroTitle = document.querySelector('.hero-title');
+            const originalText = heroTitle.textContent;
+            heroTitle.textContent = '';
+            
+            let i = 0;
+            const typeWriter = () => {
+                if (i < originalText.length) {
+                    heroTitle.textContent += originalText.charAt(i);
+                    i++;
+                    setTimeout(typeWriter, 100);
+                }
+            };
+            
+            setTimeout(typeWriter, 1000);
+        });
+
+        // Add parallax effect to sections
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const parallaxElements = document.querySelectorAll('.parallax-bg');
+            
+            parallaxElements.forEach((element, index) => {
+                const speed = 0.5 + (index * 0.1);
+                element.style.transform = `translateY(${scrolled * speed}px)`;
+            });
+        });
+
+        // Easter egg: Konami code
+        let konamiCode = [];
+        const konami = [38, 38, 40, 40, 37, 39, 37, 39, 66, 65];
+        
+        document.addEventListener('keydown', (e) => {
+            konamiCode.push(e.keyCode);
+            if (konamiCode.length > konami.length) {
+                konamiCode.shift();
+            }
+            
+            if (konamiCode.join(',') === konami.join(',')) {
+                // Trigger special effect
+                document.body.style.animation = 'rainbow 2s ease-in-out';
+                setTimeout(() => {
+                    document.body.style.animation = '';
+                }, 2000);
+            }
+        });
+
+        // Add rainbow animation for easter egg
+        const rainbowStyle = document.createElement('style');
+        rainbowStyle.textContent = `
+            @keyframes rainbow {
+                0% { filter: hue-rotate(0deg); }
+                25% { filter: hue-rotate(90deg); }
+                50% { filter: hue-rotate(180deg); }
+                75% { filter: hue-rotate(270deg); }
+                100% { filter: hue-rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(rainbowStyle);
+    </script>
+</body>
+</html>
