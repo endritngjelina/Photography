@@ -1,0 +1,1695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LensArt Studios - Capturing Life's Beauty</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@300;400;700;900&family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@400;700;900&display=swap');
+        
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --accent-gradient: linear-gradient(45deg, #ff6b6b, #ffa500, #ff006e);
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(ellipse at top, #1a1a2e 0%, #16213e 25%, #0a0a0a 100%);
+            overflow-x: hidden;
+            cursor: none;
+        }
+        
+        /* Custom Cursor */
+        .custom-cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ff6b6b;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transition: all 0.1s ease;
+            mix-blend-mode: difference;
+        }
+        
+        .cursor-follower {
+            position: fixed;
+            width: 40px;
+            height: 40px;
+            background: radial-gradient(circle, rgba(255, 107, 107, 0.3) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9998;
+            transition: all 0.3s ease;
+        }
+        
+        /* Loading Screen */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            transition: opacity 1s ease, visibility 1s ease;
+        }
+        
+        .loading-screen.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        .loader {
+            width: 100px;
+            height: 100px;
+            border: 3px solid rgba(255, 107, 107, 0.3);
+            border-top: 3px solid #ff6b6b;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 2rem;
+        }
+        
+        .loading-text {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 300;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        
+        /* Hero Section */
+        .hero-section {
+            position: relative;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        #three-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            color: white;
+            max-width: 900px;
+            padding: 2rem;
+        }
+        
+        .hero-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 5rem;
+            font-weight: 300;
+            margin-bottom: 1rem;
+            opacity: 0;
+            transform: translateY(50px);
+            animation: fadeInUp 2s ease forwards;
+            background: linear-gradient(45deg, #fff, #ff6b6b, #ffa500);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-size: 300% 300%;
+            animation: fadeInUp 2s ease forwards, gradientShift 4s ease-in-out infinite;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.4rem;
+            margin-bottom: 3rem;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUp 2s ease 0.3s forwards;
+            font-weight: 300;
+            line-height: 1.8;
+        }
+        
+        .cta-buttons {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .cta-button {
+            background: var(--accent-gradient);
+            padding: 1.2rem 3rem;
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUp 2s ease 0.6s forwards;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.6s ease;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 50px rgba(255, 107, 107, 0.4);
+            background-size: 200% 200%;
+        }
+        
+        .cta-button:hover::before {
+            left: 100%;
+        }
+        
+        .cta-secondary {
+            background: transparent;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+        }
+        
+        .cta-secondary:hover {
+            border-color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.1);
+        }
+        
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        /* Scrolling Text Banner */
+        .scrolling-banner {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 1rem 0;
+            overflow: hidden;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .scrolling-text {
+            display: flex;
+            white-space: nowrap;
+            animation: scroll 20s linear infinite;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .scrolling-text span {
+            margin: 0 3rem;
+            background: var(--accent-gradient);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        @keyframes scroll {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        
+        /* Sections */
+        .section {
+            padding: 8rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 4rem;
+            text-align: center;
+            margin-bottom: 4rem;
+            color: white;
+            position: relative;
+            opacity: 0;
+            transform: translateY(50px);
+            transition: all 1s ease;
+        }
+        
+        .section-title.animate {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 4px;
+            background: var(--accent-gradient);
+            border-radius: 2px;
+        }
+        
+        /* Enhanced Gallery */
+        .gallery-container {
+            position: relative;
+        }
+        
+        .gallery-filter {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            padding: 0.8rem 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 30px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .filter-btn.active,
+        .filter-btn:hover {
+            background: var(--accent-gradient);
+            border-color: transparent;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
+        }
+        
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2.5rem;
+            margin-top: 3rem;
+        }
+        
+        .gallery-item {
+            position: relative;
+            border-radius: 25px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            opacity: 0;
+            transform: translateY(50px) scale(0.9);
+        }
+        
+        .gallery-item.animate {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+        
+        .gallery-item:hover {
+            transform: translateY(-20px) scale(1.05);
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.4);
+        }
+        
+        .gallery-image {
+            width: 100%;
+            height: 350px;
+            background: var(--primary-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5rem;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .gallery-image::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+        
+        .gallery-item:hover .gallery-image::before {
+            transform: translateX(100%);
+        }
+        
+        .gallery-item:hover .gallery-image {
+            transform: scale(1.1);
+        }
+        
+        .gallery-info {
+            padding: 2rem;
+            color: white;
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+        }
+        
+        .gallery-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.8rem;
+            background: var(--accent-gradient);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .gallery-desc {
+            opacity: 0.9;
+            line-height: 1.7;
+            font-size: 1rem;
+        }
+        
+        .gallery-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #ff6b6b;
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        /* Advanced Services Section */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2.5rem;
+            margin-top: 4rem;
+        }
+        
+        .service-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(30px);
+            border: 1px solid var(--glass-border);
+            border-radius: 25px;
+            padding: 3rem 2rem;
+            text-align: center;
+            color: white;
+            transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(50px);
+        }
+        
+        .service-card.animate {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .service-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--accent-gradient);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: -1;
+        }
+        
+        .service-card:hover {
+            transform: translateY(-15px) rotateY(5deg);
+            border-color: rgba(255, 107, 107, 0.5);
+        }
+        
+        .service-card:hover::before {
+            opacity: 0.1;
+        }
+        
+        .service-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            background: var(--accent-gradient);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            transition: transform 0.3s ease;
+        }
+        
+        .service-card:hover .service-icon {
+            transform: scale(1.2) rotateY(360deg);
+        }
+        
+        .service-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            font-family: 'Orbitron', monospace;
+        }
+        
+        .service-desc {
+            line-height: 1.8;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+        
+        .service-features {
+            list-style: none;
+            text-align: left;
+        }
+        
+        .service-features li {
+            padding: 0.5rem 0;
+            position: relative;
+            padding-left: 2rem;
+        }
+        
+        .service-features li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+        
+        /* Testimonials Carousel */
+        .testimonials-section {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 6rem 2rem;
+            margin: 4rem 0;
+        }
+        
+        .testimonials-carousel {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+            border-radius: 25px;
+        }
+        
+        .testimonial {
+            text-align: center;
+            padding: 3rem;
+            color: white;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.5s ease;
+            position: absolute;
+            width: 100%;
+        }
+        
+        .testimonial.active {
+            opacity: 1;
+            transform: translateX(0);
+            position: relative;
+        }
+        
+        .testimonial-text {
+            font-size: 1.3rem;
+            line-height: 1.8;
+            margin-bottom: 2rem;
+            font-style: italic;
+        }
+        
+        .testimonial-author {
+            font-weight: 600;
+            color: #ff6b6b;
+        }
+        
+        .carousel-controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .carousel-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .carousel-dot.active {
+            background: #ff6b6b;
+            transform: scale(1.3);
+        }
+        
+        /* Enhanced Contact Section */
+        .contact-section {
+            background: var(--glass-bg);
+            backdrop-filter: blur(30px);
+            border-radius: 30px;
+            padding: 4rem;
+            margin: 4rem 0;
+            text-align: center;
+            border: 1px solid var(--glass-border);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .contact-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--accent-gradient);
+            opacity: 0.05;
+            z-index: -1;
+        }
+        
+        .contact-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            margin-top: 3rem;
+            align-items: start;
+        }
+        
+        .contact-info {
+            text-align: left;
+        }
+        
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            color: white;
+        }
+        
+        .contact-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--accent-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: white;
+        }
+        
+        .contact-form {
+            display: grid;
+            gap: 1.5rem;
+        }
+        
+        .form-group {
+            position: relative;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 1.2rem;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #ff6b6b;
+            box-shadow: 0 0 30px rgba(255, 107, 107, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .form-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        /* Stats Counter */
+        .stats-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin: 6rem 0;
+        }
+        
+        .stat-card {
+            text-align: center;
+            padding: 2rem;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 900;
+            background: var(--accent-gradient);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-family: 'Orbitron', monospace;
+        }
+        
+        .stat-label {
+            font-size: 1.1rem;
+            opacity: 0.8;
+            margin-top: 0.5rem;
+        }
+        
+        /* Floating elements */
+        .floating-elements {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .floating-element {
+            position: absolute;
+            color: rgba(255, 255, 255, 0.1);
+            font-size: 2rem;
+            animation: float 8s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            25% { transform: translateY(-20px) rotate(5deg); }
+            50% { transform: translateY(-10px) rotate(-5deg); }
+            75% { transform: translateY(-30px) rotate(3deg); }
+        }
+        
+        /* Enhanced Navbar */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 1rem 2rem;
+            background: rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(30px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+        
+        .navbar.scrolled {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 0.8rem 2rem;
+        }
+        
+        .nav-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-family: 'Orbitron', monospace;
+            font-size: 2rem;
+            font-weight: 900;
+            background: var(--accent-gradient);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 3rem;
+            list-style: none;
+        }
+        
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            position: relative;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background: var(--accent-gradient);
+            transition: width 0.3s ease;
+            border-radius: 2px;
+        }
+        
+        .nav-link:hover::after,
+        .nav-link.active::after {
+            width: 100%;
+        }
+        
+        .nav-link:hover {
+            color: #ff6b6b;
+        }
+        
+        /* Mobile Menu */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        /* Progress Bar */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 3px;
+            background: var(--accent-gradient);
+            z-index: 9999;
+            transition: width 0.1s ease;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hero-title { font-size: 3rem; }
+            .section-title { font-size: 2.5rem; }
+            .nav-links { display: none; }
+            .mobile-menu-btn { display: block; }
+            .contact-grid { grid-template-columns: 1fr; gap: 2rem; }
+            .cta-buttons { flex-direction: column; align-items: center; }
+        }
+        
+        @media (max-width: 480px) {
+            .hero-title { font-size: 2.5rem; }
+            .section { padding: 4rem 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Custom Cursor -->
+    <div class="custom-cursor"></div>
+    <div class="cursor-follower"></div>
+    
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loader"></div>
+        <div class="loading-text">Loading Amazing Experience...</div>
+    </div>
+    
+    <!-- Progress Bar -->
+    <div class="progress-bar" id="progressBar"></div>
+
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-content">
+            <div class="logo">LENSART</div>
+            <ul class="nav-links">
+                <li><a href="#home" class="nav-link active">Home</a></li>
+                <li><a href="#gallery" class="nav-link">Gallery</a></li>
+                <li><a href="#services" class="nav-link">Services</a></li>
+                <li><a href="#testimonials" class="nav-link">Reviews</a></li>
+                <li><a href="#contact" class="nav-link">Contact</a></li>
+            </ul>
+            <button class="mobile-menu-btn">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Floating Background Elements -->
+    <div class="floating-elements">
+        <i class="fas fa-camera floating-element" style="top: 10%; left: 10%; animation-delay: 0s;"></i>
+        <i class="fas fa-aperture floating-element" style="top: 20%; right: 15%; animation-delay: 1s;"></i>
+        <i class="fas fa-film floating-element" style="bottom: 30%; left: 20%; animation-delay: 2s;"></i>
+        <i class="fas fa-camera-retro floating-element" style="bottom: 15%; right: 10%; animation-delay: 3s;"></i>
+        <i class="fas fa-image floating-element" style="top: 50%; left: 5%; animation-delay: 4s;"></i>
+        <i class="fas fa-video floating-element" style="top: 60%; right: 8%; animation-delay: 5s;"></i>
+    </div>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero-section">
+        <canvas id="three-canvas"></canvas>
+        <div class="hero-content">
+            <h1 class="hero-title">Capturing Life's<br>Most Beautiful Moments</h1>
+            <p class="hero-subtitle">Professional photography that tells your unique story through stunning visuals, artistic vision, and cutting-edge technology that brings your memories to life</p>
+            <div class="cta-buttons">
+                <button class="cta-button" onclick="scrollToSection('gallery')">
+                    <i class="fas fa-camera"></i> Explore Portfolio
+                </button>
+                <button class="cta-button cta-secondary" onclick="scrollToSection('contact')">
+                    <i class="fas fa-phone"></i> Book Session
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Scrolling Banner -->
+    <div class="scrolling-banner">
+        <div class="scrolling-text">
+            <span>PROFESSIONAL PHOTOGRAPHY</span>
+            <span>CREATIVE VISION</span>
+            <span>STUNNING RESULTS</span>
+            <span>MEMORABLE MOMENTS</span>
+            <span>ARTISTIC EXCELLENCE</span>
+            <span>PREMIUM QUALITY</span>
+            <span>TIMELESS MEMORIES</span>
+        </div>
+    </div>
+
+    <!-- Stats Section -->
+    <section class="stats-section" id="stats">
+        <div class="stat-card">
+            <div class="stat-number" data-target="500">0</div>
+            <div class="stat-label">Happy Clients</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" data-target="1200">0</div>
+            <div class="stat-label">Projects Completed</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" data-target="15">0</div>
+            <div class="stat-label">Awards Won</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" data-target="8">0</div>
+            <div class="stat-label">Years Experience</div>
+        </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section id="gallery" class="section">
+        <div class="gallery-container">
+            <h2 class="section-title">Featured Work</h2>
+            
+            <div class="gallery-filter">
+                <button class="filter-btn active" data-filter="all">All Work</button>
+                <button class="filter-btn" data-filter="portrait">Portraits</button>
+                <button class="filter-btn" data-filter="wedding">Weddings</button>
+                <button class="filter-btn" data-filter="landscape">Landscapes</button>
+                <button class="filter-btn" data-filter="commercial">Commercial</button>
+            </div>
+            
+            <div class="gallery-grid">
+                <div class="gallery-item" data-category="portrait" onclick="openLightbox('portrait1')">
+                    <div class="gallery-image">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <div class="gallery-info">
+                        <h3 class="gallery-title">Executive Portraits</h3>
+                        <p class="gallery-desc">Professional headshots that capture personality and confidence for corporate leaders and entrepreneurs.</p>
+                        <div class="gallery-stats">
+                            <div class="stat">
+                                <div class="stat-number">4.9</div>
+                                <div class="stat-label">Rating</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-number">50+</div>
+                                <div class="stat-label">Photos</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-number">2hrs</div>
+                                <div class="stat-label">Session</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="gallery-item" data-category="landscape" onclick="openLightbox('landscape1')">
+                    <div class="gallery-image">
+                        <i class="fas fa-mountain"></i>
+                    </div>
+                    <div class="gallery-info">
+                        <h3 class="gallery-title">Dramatic Landscapes</h3>
+                        <p class="gallery-desc">Breathtaking natural scenes captured during golden hour with professional techniques and artistic vision.</p>
+                        <div class="gallery-stats">
+                            <div class="stat">
+                                <div class="stat-number">5.0</div>
+                                <div class="stat-label">Rating</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-number">100+</div>
+                                <div class="stat-label">Photos</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-number">1 Day</div>
+                                <div class="stat-label">Shoot</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="gallery-item" data-category="wedding" onclick="openLightbox('wedding1')">
+                    <div class="gallery-image">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <div class="gallery-info">
+                        <h3 class="gallery-title">Romantic Wedding</h3>
+                        <p class="gallery-desc">Timeless wedding photography that captures every precious moment of your special day with cinematic quality.</p>
+                        <div class="gallery-stats">
+                            <div class="stat">
+                                <div class="stat-number">4.8</div>
+                                <div class="stat-label">Rating</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-number">300+</div>
+                                <div class="stat-label">Photos</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-number">8hrs</div>
+                                <div class="stat-label">Coverage</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="gallery-item" data-category="commercial" onclick="openLightbox('commercial1')">
+                    <div class="gallery-image">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <div class="gallery-info">
+                        <h3 class="gallery-title">Brand Photography</h3>
+                        <p class="gallery-desc">High-impact commercial photography that elevates your brand and communicates your message effectively.</p>
+                        <div class="gallery-stats">
+                            <div class="stat">
+                                <div class="stat-number">4.9</div>
+                                <div class="stat-label">Rating</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-number">75+</div>
+                                <div class="stat-label">Photos</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-number">4hrs</div>
+                                <div class="stat-label">Session</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="gallery-item" data-category="portrait" onclick="openLightbox('portrait2')">
+                    <div class="gallery-image">
+                        <i class="fas fa-child"></i>
+                    </div>
+                    <div class="gallery-info">
+                        <h3 class="gallery-title">Family Moments</h3>
+                        <p class="gallery-desc">Candid family photography that captures genuine emotions and creates lasting memories for generations.</p>
+                        <div class="gallery-stats">
+                            <div class="stat">
+                                <div class="stat-number">5.0</div>
+                                <div class="stat-label">Rating</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-number">80+</div>
+                                <div class="stat-label">Photos</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-number">3hrs</div>
+                                <div class="stat-label">Session</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="gallery-item" data-category="landscape" onclick="openLightbox('landscape2')">
+                    <div class="gallery-image">
+                        <i class="fas fa-water"></i>
+                    </div>
+                    <div class="gallery-info">
+                        <h3 class="gallery-title">Seascape Beauty</h3>
+                        <p class="gallery-desc">Stunning coastal photography capturing the power and serenity of ocean waves and dramatic skies.</p>
+                        <div class="gallery-stats">
+                            <div class="stat">
+                                <div class="stat-number">4.9</div>
+                                <div class="stat-label">Rating</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-number">60+</div>
+                                <div class="stat-label">Photos</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-number">2hrs</div>
+                                <div class="stat-label">Shoot</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="section">
+        <h2 class="section-title">Professional Services</h2>
+        <div class="services-grid">
+            <div class="service-card">
+                <i class="fas fa-camera service-icon"></i>
+                <h3 class="service-title">Event Photography</h3>
+                <p class="service-desc">Complete event coverage from corporate gatherings to private celebrations, ensuring every moment is beautifully documented with professional quality.</p>
+                <ul class="service-features">
+                    <li>Full-day event coverage</li>
+                    <li>Professional lighting setup</li>
+                    <li>Same-day preview gallery</li>
+                    <li>High-resolution delivery</li>
+                    <li>Professional editing included</li>
+                </ul>
+            </div>
+            
+            <div class="service-card">
+                <i class="fas fa-video service-icon"></i>
+                <h3 class="service-title">Video Production</h3>
+                <p class="service-desc">Professional video services including promotional content, documentaries, and cinematic storytelling that brings your vision to life.</p>
+                <ul class="service-features">
+                    <li>4K video recording</li>
+                    <li>Drone footage available</li>
+                    <li>Professional audio recording</li>
+                    <li>Color grading & editing</li>
+                    <li>Multiple format delivery</li>
+                </ul>
+            </div>
+            
+            <div class="service-card">
+                <i class="fas fa-edit service-icon"></i>
+                <h3 class="service-title">Photo Editing</h3>
+                <p class="service-desc">Professional post-processing and retouching services to enhance and perfect your visual content with artistic precision.</p>
+                <ul class="service-features">
+                    <li>Color correction & grading</li>
+                    <li>Portrait retouching</li>
+                    <li>Background replacement</li>
+                    <li>HDR processing</li>
+                    <li>Creative compositing</li>
+                </ul>
+            </div>
+            
+            <div class="service-card">
+                <i class="fas fa-graduation-cap service-icon"></i>
+                <h3 class="service-title">Photography Workshops</h3>
+                <p class="service-desc">Learn the art of photography through hands-on workshops and personalized mentoring sessions with industry professionals.</p>
+                <ul class="service-features">
+                    <li>Beginner to advanced levels</li>
+                    <li>Small group sessions</li>
+                    <li>Equipment training</li>
+                    <li>Field practice sessions</li>
+                    <li>Certificate of completion</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="testimonials-section">
+        <div class="section">
+            <h2 class="section-title">What Clients Say</h2>
+            <div class="testimonials-carousel">
+                <div class="testimonial active">
+                    <p class="testimonial-text">"LensArt Studios exceeded all our expectations. The attention to detail and creative vision resulted in photos that truly captured the essence of our special day. Absolutely stunning work!"</p>
+                    <div class="testimonial-author">- Sarah & Michael Johnson</div>
+                </div>
+                <div class="testimonial">
+                    <p class="testimonial-text">"Professional, creative, and incredibly talented. The corporate headshots turned out amazing and really elevated our company's brand image. Highly recommended!"</p>
+                    <div class="testimonial-author">- David Chen, CEO TechStart</div>
+                </div>
+                <div class="testimonial">
+                    <p class="testimonial-text">"The landscape photography workshop was incredible. I learned techniques that completely transformed my photography skills. The instructor was knowledgeable and patient."</p>
+                    <div class="testimonial-author">- Emma Rodriguez, Photography Enthusiast</div>
+                </div>
+            </div>
+            <div class="carousel-controls">
+                <div class="carousel-dot active" onclick="showTestimonial(0)"></div>
+                <div class="carousel-dot" onclick="showTestimonial(1)"></div>
+                <div class="carousel-dot" onclick="showTestimonial(2)"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="section">
+        <div class="contact-section">
+            <h2 class="section-title">Let's Create Together</h2>
+            <div class="contact-grid">
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div>
+                            <h4>Studio Location</h4>
+                            <p>123 Creative District<br>Photography Lane, FL 34683</p>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <div>
+                            <h4>Phone</h4>
+                            <p>+1 (555) 123-4567</p>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div>
+                            <h4>Email</h4>
+                            <p>hello@lensartstudios.com</p>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div>
+                            <h4>Studio Hours</h4>
+                            <p>Mon-Fri: 9AM-6PM<br>Sat-Sun: By Appointment</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <form class="contact-form" onsubmit="handleSubmit(event)">
+                    <div class="form-group">
+                        <input type="text" class="form-input" placeholder="Your Name" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" class="form-input" placeholder="Email Address" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="tel" class="form-input" placeholder="Phone Number">
+                    </div>
+                    <div class="form-group">
+                        <select class="form-input" required>
+                            <option value="">Select Service</option>
+                            <option value="wedding">Wedding Photography</option>
+                            <option value="portrait">Portrait Session</option>
+                            <option value="commercial">Commercial Photography</option>
+                            <option value="event">Event Photography</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <textarea class="form-input" placeholder="Tell me about your project, vision, and requirements..." rows="5" required></textarea>
+                    </div>
+                    <button type="submit" class="cta-button">
+                        <i class="fas fa-paper-plane"></i> Send Message
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Three.js Enhanced Scene Setup
+        let scene, camera, renderer, cameras = [], particles, particleSystem;
+        let mouseX = 0, mouseY = 0;
+        let clock = new THREE.Clock();
+
+        function initThree() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({
+                canvas: document.getElementById('three-canvas'),
+                alpha: true,
+                antialias: true
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0x000000, 0);
+
+            // Enhanced camera models with different shapes
+            const cameraGeometry1 = new THREE.BoxGeometry(1, 0.7, 0.5);
+            const cameraGeometry2 = new THREE.CylinderGeometry(0.3, 0.5, 1, 8);
+            const cameraGeometry3 = new THREE.SphereGeometry(0.4, 16, 16);
+
+            const materials = [
+                new THREE.MeshPhongMaterial({ color: 0xff6b6b, transparent: true, opacity: 0.8 }),
+                new THREE.MeshPhongMaterial({ color: 0xffa500, transparent: true, opacity: 0.8 }),
+                new THREE.MeshPhongMaterial({ color: 0xff006e, transparent: true, opacity: 0.8 }),
+            ];
+
+            // Create floating camera models with variety
+            for (let i = 0; i < 25; i++) {
+                const geometries = [cameraGeometry1, cameraGeometry2, cameraGeometry3];
+                const cameraObj = new THREE.Mesh(
+                    geometries[i % 3], 
+                    materials[i % 3].clone()
+                );
+                
+                cameraObj.position.set(
+                    (Math.random() - 0.5) * 30,
+                    (Math.random() - 0.5) * 15,
+                    (Math.random() - 0.5) * 15
+                );
+                
+                cameraObj.userData = {
+                    speedX: (Math.random() - 0.5) * 0.03,
+                    speedY: (Math.random() - 0.5) * 0.03,
+                    speedZ: (Math.random() - 0.5) * 0.03,
+                    floatSpeed: Math.random() * 0.02 + 0.01,
+                    initialY: cameraObj.position.y
+                };
+                
+                cameras.push(cameraObj);
+                scene.add(cameraObj);
+            }
+
+            // Enhanced particle system
+            createParticleSystem();
+
+            // Advanced lighting setup
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight.position.set(10, 10, 5);
+            scene.add(directionalLight);
+
+            const pointLight1 = new THREE.PointLight(0xff6b6b, 2, 50);
+            pointLight1.position.set(-10, 5, 10);
+            scene.add(pointLight1);
+
+            const pointLight2 = new THREE.PointLight(0xffa500, 2, 50);
+            pointLight2.position.set(10, -5, 10);
+            scene.add(pointLight2);
+
+            camera.position.z = 20;
+            animate();
+        }
+
+        function createParticleSystem() {
+            const particleCount = 200;
+            const particles = new THREE.BufferGeometry();
+            const positions = new Float32Array(particleCount * 3);
+            const colors = new Float32Array(particleCount * 3);
+
+            for (let i = 0; i < particleCount; i++) {
+                positions[i * 3] = (Math.random() - 0.5) * 100;
+                positions[i * 3 + 1] = (Math.random() - 0.5) * 100;
+                positions[i * 3 + 2] = (Math.random() - 0.5) * 100;
+
+                // Color variation
+                const color = new THREE.Color();
+                color.setHSL(Math.random() * 0.1 + 0.05, 0.8, 0.7);
+                colors[i * 3] = color.r;
+                colors[i * 3 + 1] = color.g;
+                colors[i * 3 + 2] = color.b;
+            }
+
+            particles.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            particles.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+            const particleMaterial = new THREE.PointsMaterial({
+                size: 2,
+                transparent: true,
+                opacity: 0.7,
+                vertexColors: true,
+                blending: THREE.AdditiveBlending
+            });
+
+            particleSystem = new THREE.Points(particles, particleMaterial);
+            scene.add(particleSystem);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const elapsedTime = clock.getElapsedTime();
+
+            // Animate floating cameras with more complex movement
+            cameras.forEach((cam, index) => {
+                cam.rotation.x += cam.userData.speedX;
+                cam.rotation.y += cam.userData.speedY;
+                cam.rotation.z += cam.userData.speedZ;
+                
+                // Complex floating motion
+                cam.position.y = cam.userData.initialY + 
+                    Math.sin(elapsedTime * cam.userData.floatSpeed + index) * 3 +
+                    Math.cos(elapsedTime * cam.userData.floatSpeed * 0.5 + index) * 1.5;
+                
+                cam.position.x += Math.sin(elapsedTime * 0.5 + index) * 0.01;
+                cam.position.z += Math.cos(elapsedTime * 0.3 + index) * 0.01;
+            });
+
+            // Animate particle system
+            if (particleSystem) {
+                particleSystem.rotation.x += 0.0005;
+                particleSystem.rotation.y += 0.001;
+                
+                const positions = particleSystem.geometry.attributes.position.array;
+                for (let i = 0; i < positions.length; i += 3) {
+                    positions[i + 1] += Math.sin(elapsedTime + positions[i]) * 0.01;
+                }
+                particleSystem.geometry.attributes.position.needsUpdate = true;
+            }
+
+            // Enhanced mouse interaction
+            const targetX = mouseX * 0.1;
+            const targetY = -mouseY * 0.1;
+            
+            camera.position.x += (targetX - camera.position.x) * 0.02;
+            camera.position.y += (targetY - camera.position.y) * 0.02;
+            camera.lookAt(scene.position);
+
+            renderer.render(scene, camera);
+        }
+
+        // Enhanced mouse movement tracking
+        document.addEventListener('mousemove', (event) => {
+            mouseX = (event.clientX - window.innerWidth / 2) / (window.innerWidth / 2);
+            mouseY = (event.clientY - window.innerHeight / 2) / (window.innerHeight / 2);
+            
+            // Update custom cursor
+            const cursor = document.querySelector('.custom-cursor');
+            const follower = document.querySelector('.cursor-follower');
+            
+            cursor.style.left = event.clientX + 'px';
+            cursor.style.top = event.clientY + 'px';
+            
+            setTimeout(() => {
+                follower.style.left = event.clientX + 'px';
+                follower.style.top = event.clientY + 'px';
+            }, 100);
+        });
+
+        // Loading screen
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('loadingScreen').classList.add('hidden');
+            }, 2000);
+        });
+
+        // Progress bar
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const maxHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const progress = (scrolled / maxHeight) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        });
+
+        // Enhanced scroll animations with Intersection Observer
+        function setupScrollAnimations() {
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('animate');
+                        
+                        // Special handling for stats counter
+                        if (entry.target.classList.contains('stat-number')) {
+                            animateCounter(entry.target);
+                        }
+                    }
+                });
+            }, observerOptions);
+
+            // Observe elements
+            document.querySelectorAll('.section-title, .gallery-item, .service-card, .stat-number').forEach(el => {
+                observer.observe(el);
+            });
+        }
+
+        // Counter animation
+        function animateCounter(el) {
+            const target = parseInt(el.getAttribute('data-target'));
+            const duration = 2000;
+            const increment = target / (duration / 16);
+            let current = 0;
+
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    current = target;
+                    clearInterval(timer);
+                }
+                el.textContent = Math.floor(current) + (target > 100 ? '+' : '');
+            }, 16);
+        }
+
+        // Gallery filtering
+        function setupGalleryFilter() {
+            const filterBtns = document.querySelectorAll('.filter-btn');
+            const galleryItems = document.querySelectorAll('.gallery-item');
+
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // Update active button
+                    filterBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+
+                    const filter = btn.getAttribute('data-filter');
+
+                    galleryItems.forEach(item => {
+                        const category = item.getAttribute('data-category');
+                        
+                        if (filter === 'all' || category === filter) {
+                            item.style.opacity = '1';
+                            item.style.transform = 'scale(1)';
+                            item.style.display = 'block';
+                        } else {
+                            item.style.opacity = '0';
+                            item.style.transform = 'scale(0.8)';
+                            setTimeout(() => {
+                                if (item.style.opacity === '0') {
+                                    item.style.display = 'none';
+                                }
+                            }, 300);
+                        }
+                    });
+                });
+            });
+        }
+
+        // Testimonials carousel
+        let currentTestimonial = 0;
+        const testimonials = document.querySelectorAll('.testimonial');
+        const dots = document.querySelectorAll('.carousel-dot');
+
+        function showTestimonial(index) {
+            testimonials.forEach(t => t.classList.remove('active'));
+            dots.forEach(d => d.classList.remove('active'));
+            
+            testimonials[index].classList.add('active');
+            dots[index].classList.add('active');
+            currentTestimonial = index;
+        }
+
+        // Auto-advance testimonials
+        setInterval(() => {
+            currentTestimonial = (currentTestimonial + 1) % testimonials.length;
+            showTestimonial(currentTestimonial);
+        }, 5000);
+
+        // Enhanced navbar scroll effect
+        window.addEventListener('scroll', () => {
+            const navbar = document.getElementById('navbar');
+            const scrolled = window.pageYOffset > 100;
+            
+            navbar.classList.toggle('scrolled', scrolled);
+
+            // Update active nav link
+            const sections = document.querySelectorAll('section[id]');
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop - 150;
+                if (pageYOffset >= sectionTop) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+
+        // Utility functions
+        function scrollToSection(sectionId) {
+            document.getElementById(sectionId).scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+
+        function openLightbox(imageId) {
+            // Enhanced lightbox functionality
+            const lightbox = document.createElement('div');
+            lightbox.className = 'lightbox';
+            lightbox.innerHTML = `
+                <div class="lightbox-content">
+                    <span class="lightbox-close">&times;</span>
+                    <div class="lightbox-image">
+                        <i class="fas fa-image" style="font-size: 10rem; color: white;"></i>
+                        <p style="margin-top: 2rem; color: white; text-align: center;">
+                            Full-resolution image would be displayed here<br>
+                            <small>Image ID: ${imageId}</small>
+                        </p>
+                    </div>
+                </div>
+            `;
+            
+            lightbox.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.9);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            `;
+            
+            document.body.appendChild(lightbox);
+            
+            setTimeout(() => {
+                lightbox.style.opacity = '1';
+            }, 10);
+            
+            lightbox.querySelector('.lightbox-close').onclick = () => {
+                lightbox.style.opacity = '0';
+                setTimeout(() => {
+                    document.body.removeChild(lightbox);
+                }, 300);
+            };
+            
+            lightbox.onclick = (e) => {
+                if (e.target === lightbox) {
+                    lightbox.click();
+                }
+            };
+        }
+
+        function handleSubmit(event) {
+            event.preventDefault();
+            
+            // Enhanced form submission with animation
+            const button = event.target.querySelector('button[type="submit"]');
+            const originalText = button.innerHTML;
+            
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+            
+            // Simulate form submission
+            setTimeout(() => {
+                button.innerHTML = '<i class="fas fa-check"></i> Sent Successfully!';
+                button.disabled = true;
+                button.style.backgroundColor = '#4CAF50';
+                
+                // Reset form after success
+                setTimeout(() => {
+                    event.target.reset();
+                    button.innerHTML = originalText;
+                    button.disabled = false;
+                    button.style.backgroundColor = '';
+                }, 3000);
+            }, 2000);
+        }
+        // Initialize everything when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            initThree();
+            setupScrollAnimations();
+            setupGalleryFilter();
+            
+            // Initialize testimonials
+            showTestimonial(0);
+            
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+            
+            // Mobile menu toggle (if needed)
+            const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+            mobileMenuBtn.addEventListener('click', () => {
+                alert('Mobile menu would open here. In a real implementation, this would show a navigation drawer.');
+            });
+        });
+    </script>
+</body>
+</html>
